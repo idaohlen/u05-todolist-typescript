@@ -1,0 +1,140 @@
+@use "sass:color";
+@use "../partials/variables" as *;
+
+.todos-container {
+  padding: 1rem 2rem;
+  flex: 1;
+  display: grid;
+  align-items: start;
+  overflow: auto;
+  gap: .5rem;
+}
+
+.todo {
+  $color: $color-red;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  padding-right: 1.5rem;
+  background: $color;
+  color: white;
+  border-radius: 100vw;
+  outline: 1px solid transparent;
+  outline-offset: 2px;
+  cursor: pointer;
+  transition: all .4s;
+
+  &:hover {
+    outline-color: $color-red;
+  }
+
+  &__icon {
+    $size: 4rem;
+    padding: .5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: $size;
+    height: $size;
+    font-size: 3rem;
+    color: $color;
+    background: white;
+    border-radius: 50%;
+  }
+
+  &__info {
+    flex: 1;
+  }
+
+  &__due-date {
+    margin-top: .5rem;
+  }
+}
+
+.todo__checkbox {
+  position: relative;
+  display: inline-block;
+  height: 2.4rem;
+  width: 2.4rem;
+  outline: 2px solid transparent;
+  transition: all .4s;
+  border-radius: 4px;
+
+  &:hover {
+    outline-color: color.adjust(
+      $primary-color,
+      $lightness: -10%,
+      $saturation: -20%
+    );
+  }
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    
+    &:checked ~ .checkmark {
+      background-color: white;
+    }
+
+    &:checked ~ .checkmark .check-icon {
+      display: block;
+    }
+  }
+
+  .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: white;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .check-icon {
+    display: none;
+    color: $color-red;
+    font-size: 1.4rem;
+    width: auto;
+    height: auto;
+  }
+}
+
+.new-todo {
+  position: relative;
+  margin: 0rem 2rem 2rem;
+  
+  &__input {
+    width: 100%;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 1.5rem 2.2rem;
+    border-radius: 200px;
+    border: 2px solid $primary-color;
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: .7rem;
+    color: $secondary-color;
+    font-size: 4rem;
+    background: none;
+    border: none;
+    transition: all .4s;
+
+    &:hover {
+      color: $primary-color;
+    }
+  }
+}

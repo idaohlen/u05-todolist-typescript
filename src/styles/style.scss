@@ -1,12 +1,9 @@
-html {
-  font-size: 62.5%;
-  font-family: "Sofia Sans Variable", sans-serif;
-}
+@use "partials/variables" as *;
+@use "partials/base";
+@use "partials/typography";
+@use "partials/layout";
 
-body {
-  font-size: 1.6rem;
-}
-
-h1 {
-  font-family: "Playwrite US Trad Variable", cursive, serif;
-}
+@use "components/btn";
+@use "components/chip";
+@use "components/todos";
+@use "components/categories";

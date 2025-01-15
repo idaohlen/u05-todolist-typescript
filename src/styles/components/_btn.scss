@@ -1,0 +1,28 @@
+@use "../partials/variables" as *;
+
+button, .btn {
+  $color: white;
+  $bg: linear-gradient(to right, $primary-color, $secondary-color);
+  color: $color;
+  padding: .7rem 1.7rem;
+  font-family: inherit;
+  font-size: inherit;
+  background: $bg;
+  border: none;
+  border-radius: 200px;
+
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.btn {
+  outline: 1px solid transparent;
+  outline-offset: 2px;
+  transition: all .4s;
+  
+  &:hover {
+    outline-color: $color-red;
+  }
+}

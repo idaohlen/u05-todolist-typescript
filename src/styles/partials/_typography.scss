@@ -1,0 +1,14 @@
+@use "variables" as *;
+
+h1 {
+  margin: 0;
+  padding: 0;
+  font-family: "Playwrite US Trad Variable", cursive;
+  font-size: 4rem;
+  font-weight: 350;
+  text-align: center;
+  background: linear-gradient(to right, $primary-color, $secondary-color);
+              -webkit-background-clip: text;
+              background-clip: text;
+              color: transparent;
+}

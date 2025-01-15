@@ -1,0 +1,10 @@
+.chip {
+  $color: black;
+  $bg: #EFEFEF;
+  width: fit-content;
+  padding: .3rem .8rem;
+  background: $bg;
+  color: $color;
+  font-size: 1.2rem;
+  border-radius: 200px;
+}

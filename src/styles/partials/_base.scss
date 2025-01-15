@@ -1,0 +1,32 @@
+@use "variables" as *;
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  font-size: 62.5%;
+  font-family: "Sofia Sans Variable", sans-serif;
+}
+
+html body {
+  overflow: hidden;
+}
+
+body {
+  padding: 2rem;
+  font-size: 1.6rem;
+  background: linear-gradient($primary-color, $secondary-color);
+  background-attachment: fixed;
+}
+
+iconify-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
