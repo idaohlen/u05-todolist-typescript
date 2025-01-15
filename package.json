@@ -12,5 +12,8 @@
     "sass": "^1.83.4",
     "typescript": "~5.6.2",
     "vite": "^6.0.5"
+  },
+  "dependencies": {
+    "iconify-icon": "^2.3.0"
   }
 }
