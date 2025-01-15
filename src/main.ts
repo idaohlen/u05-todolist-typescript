@@ -4,6 +4,7 @@ import "@fontsource-variable/playwrite-us-trad";
 import "./styles/style.scss";
 
 import { getTodos, addTodo } from "./scripts/todos.ts";
+import { supabase } from "./scripts/supabaseClient.ts";
 
 const appContainer = document.querySelector("#app") as HTMLElement;
 
