@@ -70,9 +70,16 @@ function renderListPage() : void {
     <header class="app-header">
       <h1>Todo List</h1>
       <iconify-icon icon="fa6-solid:pen-nib" class="app-header__icon"></iconify-icon>
-      <button id="logoutBtn" class="logout-btn" title="Logout">
-        <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
-      </button>
+      <div class="settings-container">
+        <button id="settingsBtn" class="settings-btn" title="Settings">
+          <iconify-icon icon="solar:settings-outline"></iconify-icon>
+        </button>
+        <div id="settingsMenu" class="settings-menu">
+          <button id="editCategoriesBtn" class="settings-menu__item">Edit categories</button>
+          <button id="deleteUserBtn" class="settings-menu__item">Delete user</button>
+          <button id="logoutBtn" class="settings-menu__item">Logout</button>
+        </div>
+      </div>
     </header>
 
     <div class="new-todo">
@@ -85,16 +92,18 @@ function renderListPage() : void {
     <div class="todos-container"></div>
 
     <div class="categories-container">
-      <div class="categories">
         <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
         <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
         <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
         <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
         <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
-      </div>
-      <button class="btn edit-categories-btn">Edit Categories</button>
     </div>
   `;
+
+  document.getElementById("settingsBtn")?.addEventListener("click", () => {
+    const settingsMenu = document.getElementById("settingsMenu") as HTMLElement;
+    settingsMenu.classList.toggle("show");
+  });
 
   document.getElementById("logoutBtn")?.addEventListener("click", async () => {
     console.log("logging out...");
@@ -104,6 +113,14 @@ function renderListPage() : void {
     } catch (error) {
       console.error(error);
     }
+  });
+
+  document.getElementById("editCategoriesBtn")?.addEventListener("click", () => {
+    console.log("Edit Categories clicked");
+  });
+
+  document.getElementById("deleteUserBtn")?.addEventListener("click", () => {
+    console.log("Delete User clicked");
   });
 
   renderTodos();
