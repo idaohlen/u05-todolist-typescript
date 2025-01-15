@@ -5,9 +5,7 @@ import "./styles/style.scss";
 
 import { getTodos, addTodo } from "./scripts/todos.ts";
 
-const todosContainer = document.querySelector(".todos-container") as HTMLElement;
-const todoForm = document.querySelector("#newTodoForm") as HTMLFormElement;
-const todoInput = document.querySelector("#todoInput") as HTMLInputElement;
+const appContainer = document.querySelector("#app") as HTMLElement;
 
 interface Todo {
   id: number;
@@ -19,6 +17,8 @@ interface Todo {
 }
 
 async function renderTodos() {
+  const todosContainer = document.querySelector(".todos-container") as HTMLElement;
+
   const todos = await getTodos();
 
   const todoList = todos.map(({id, todo, completed}: Todo) => {
@@ -36,21 +36,69 @@ async function renderTodos() {
       </div>`;
   }).join("");
 
-  console.log(todos);
   todosContainer.innerHTML = todoList;
 }
 
-// Event listeners
+function renderLoginPage() : void {
+  appContainer.innerHTML = `
+    <header class="app-header">
+      <h1>Todo List</h1>
+      <iconify-icon icon="fa6-solid:pen-nib" class="app-header__icon"></iconify-icon>
+    </header>
+    <div class="login-form">
+      <input type="email" placeholder="email" id="emailInput">
+      <input type="password" placeholder="password" id="passwordInput">
+      <div class="login-form__buttons">
+        <button id="registerUserBtn" class="btn btn--outline">Register</button>
+        <button id="loginBtn class="btn">Login</button>
+      </div>
+    </div>
+  `;
+}
 
-todoForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
+function renderListPage() : void {
+  appContainer.innerHTML = `
+    <header class="app-header">
+      <h1>Todo List</h1>
+      <iconify-icon icon="fa6-solid:pen-nib" class="app-header__icon"></iconify-icon>
+    </header>
 
-  // await addTodo(todoInput.value);
-  await renderTodos();
+    <div class="new-todo">
+      <form id="newTodoForm">
+        <input type="text" class="new-todo__input" id="todoInput" placeholder="Take the dog for a walk...">
+        <button class="new-todo__btn"><iconify-icon icon="solar:add-circle-bold"></iconify-icon></button>
+      </form>
+    </div>
 
-  todoInput.value = "";
-});
+    <div class="todos-container"></div>
+
+    <div class="categories-container">
+      <div class="categories">
+        <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
+        <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
+        <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
+        <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
+        <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
+      </div>
+      <button class="btn edit-categories-btn">Edit Categories</button>
+    </div>
+  `;
+
+  const todoForm = document.querySelector("#newTodoForm") as HTMLFormElement;
+  const todoInput = document.querySelector("#todoInput") as HTMLInputElement;
+
+  // Event listeners
+
+  todoForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    // await addTodo(todoInput.value);
+    await renderTodos();
+    todoInput.value = "";
+  });
+}
 
 // Initialization code
 
-renderTodos();
+renderLoginPage();
+// renderListPage();
+// renderTodos();

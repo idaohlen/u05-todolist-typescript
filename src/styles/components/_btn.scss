@@ -8,7 +8,7 @@ button, .btn {
   font-family: inherit;
   font-size: inherit;
   background: $bg;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 200px;
 
 
@@ -25,4 +25,10 @@ button, .btn {
   &:hover {
     outline-color: $color-red;
   }
+}
+
+.btn--outline {
+  background: transparent;
+  color: $primary-color;
+  border-color: $primary-color;
 }
