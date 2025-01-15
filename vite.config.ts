@@ -10,5 +10,8 @@ export default defineConfig({
         main: path.resolve(__dirname, "src/index.html")
       }
     }
+  },
+  optimizeDeps: {
+    include: ["@supabase/supabase-js"]
   }
 });

@@ -3,7 +3,7 @@ import "@fontsource-variable/sofia-sans";
 import "@fontsource-variable/playwrite-us-trad";
 import "./styles/style.scss";
 
-import { getTodos, addTodo } from "./scripts/todos.ts";
+import { getTodos } from "./scripts/todos.ts";
 import { supabase } from "./scripts/supabaseClient.ts";
 
 const appContainer = document.querySelector("#app") as HTMLElement;
@@ -17,10 +17,34 @@ interface Todo {
   userId: number;
 }
 
+export async function registerUser(email: string, password: string) {
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) throw error;
+  return data.user;
+}
+
+export async function loginUser(email: string, password: string) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data.user;
+}
+
+export async function logoutUser() {
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+}
+
 async function renderTodos() {
   const todosContainer = document.querySelector(".todos-container") as HTMLElement;
 
-  const todos = await getTodos();
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    console.error('User not logged in');
+    return;
+  }
+
+  const todos = await getTodos(user.id);
 
   const todoList = todos.map(({id, todo, completed}: Todo) => {
     return `
@@ -55,6 +79,22 @@ function renderLoginPage() : void {
       </div>
     </div>
   `;
+
+  // Register new user
+  document.getElementById("registerUserBtn")?.addEventListener("click", async () => {
+    const email = (document.getElementById("emailInput") as HTMLInputElement).value;
+    const password = (document.getElementById("passwordInput") as HTMLInputElement).value;
+    await registerUser(email, password);
+    renderListPage();
+  });
+
+  // Login existing user
+  document.getElementById("loginBtn")?.addEventListener("click", async () => {
+    const email = (document.getElementById("emailInput") as HTMLInputElement).value;
+    const password = (document.getElementById("passwordInput") as HTMLInputElement).value;
+    await loginUser(email, password);
+    renderListPage();
+  });
 }
 
 function renderListPage() : void {
@@ -84,6 +124,8 @@ function renderListPage() : void {
       <button class="btn edit-categories-btn">Edit Categories</button>
     </div>
   `;
+
+  renderTodos();
 
   const todoForm = document.querySelector("#newTodoForm") as HTMLFormElement;
   const todoInput = document.querySelector("#todoInput") as HTMLInputElement;
