@@ -4,8 +4,8 @@
 .todos-container {
   padding: 1rem 2rem;
   flex: 1;
-  display: grid;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
   overflow: auto;
   gap: .5rem;
 }

@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "todo": "Take the dog for a walk",
+    "category": "Personal",
+    "completed": false,
+    "userId": 1,
+    "dueBy": 1672531199000
+  },
+  {
+    "id": 2,
+    "todo": "Buy groceries",
+    "category": "Shopping",
+    "completed": false,
+    "userId": 1,
+    "dueBy": 1672617599000
+  }
+]
