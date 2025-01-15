@@ -1,0 +1,13 @@
+.todolist-page {
+  position: relative;
+
+  .logout-btn {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    font-size: 3rem;
+    padding: 0;
+    background: none;
+    color: black;
+  }
+}
