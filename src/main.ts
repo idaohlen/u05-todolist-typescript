@@ -110,9 +110,11 @@ function renderListPage() : void {
     </header>
 
     <div class="new-todo">
-      <form id="newTodoForm">
+      <form id="newTodoForm" class="new-todo__form">
+        <iconify-icon icon="solar:menu-dots-bold" id="chooseCategoryBtn" class="new-todo__icon"></iconify-icon>
         <input type="text" class="new-todo__input" id="todoInput" placeholder="Take the dog for a walk...">
-        <button id="addTodoBtn" class="new-todo__btn"><iconify-icon icon="solar:add-circle-bold"></iconify-icon></button>
+        <button id="dueByBtn" class="new-todo__dueby-btn"><iconify-icon icon="solar:calendar-bold"></iconify-icon></button>
+        <button id="addTodoBtn" class="new-todo__add-btn"><iconify-icon icon="solar:add-circle-bold"></iconify-icon></button>
       </form>
     </div>
 

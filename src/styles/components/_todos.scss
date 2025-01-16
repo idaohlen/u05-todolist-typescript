@@ -108,33 +108,121 @@
 .new-todo {
   position: relative;
   margin: 0rem 2rem 2rem;
-  
-  &__input {
-    width: 100%;
-    font-family: inherit;
-    font-size: inherit;
-    padding: 1.5rem 2.2rem;
+
+  &__form {
+    display: flex;
+    align-items: center;
     border-radius: 200px;
     border: 2px solid $primary-color;
+    overflow: hidden;
+    gap: .5rem;
+
+    &:has(input:focus) {
+      outline: 2px solid $primary-color;
+    }
   }
 
-  &__btn {
+  &__icon {
+    $size: 4rem;
+    padding: .5rem;
+    margin-left: .6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: $size;
+    height: $size;
+    font-size: 3rem;
+    color: white;
+    background: $primary-color;
+    border-radius: 50%;
+    transition: all .4s;
+
+    &:hover {
+      color: $primary-color;
+      background: white;
+      cursor: pointer;
+    }
+  }
+
+  &__input {
+    height: 100%;
+    width: 100%;
+    padding: 1.5rem;
+    border: none;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &__add-btn, &__dueby-btn {
     display: flex;
     align-items: center;
     margin: 0;
     padding: 0;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: .7rem;
-    color: $secondary-color;
-    font-size: 4rem;
     background: none;
     border: none;
     transition: all .4s;
+  }
+
+  &__add-btn {
+    font-size: 4rem;
+    color: $secondary-color;
+    margin-right: .6rem;
 
     &:hover {
       color: $primary-color;
     }
   }
+
+  &__dueby-btn {
+    font-size: 3.2rem;
+    color: #B5B5B5;
+
+    &:hover {
+      color: #8e8e8e;
+    }
+  }
+  
+  // &__input {
+  //   width: 100%;
+  //   font-family: inherit;
+  //   font-size: inherit;
+  //   padding: 1.5rem 2.2rem;
+  //   border-radius: 200px;
+  //   border: 2px solid $primary-color;
+  // }
+
+  // &__add-btn, &__dueby-btn {
+  //   display: flex;
+  //   align-items: center;
+  //   margin: 0;
+  //   padding: 0;
+  //   position: absolute;
+  //   top: 0;
+  //   bottom: 0;
+  //   background: none;
+  //   border: none;
+  //   transition: all .4s;
+  // }
+
+  // &__add-btn {
+  //   right: .7rem;
+  //   color: $secondary-color;
+  //   font-size: 4rem;
+
+  //   &:hover {
+  //     color: $primary-color;
+  //   }
+  // }
+
+  // &__dueby-btn {
+  //   right: 5rem;
+  //   font-size: 3rem;
+  //   color: #B5B5B5;
+
+  //   &:hover {
+  //     color: #8e8e8e;
+  //   }
+  // }
 }
