@@ -36,6 +36,7 @@ function renderLoginPage() : void {
         <iconify-icon icon="solar:lock-password-outline" class="login-form__icon"></iconify-icon>
         <input type="password" placeholder="password" id="passwordInput">
       </div>
+      <div id="errorMessage" class="error-message"></div>
       <div class="login-form__buttons">
         <button id="registerUserBtn" class="btn btn--outline">Register</button>
         <button id="loginBtn" class="btn">Login</button>
@@ -43,15 +44,25 @@ function renderLoginPage() : void {
     </div>
   `;
 
+  const errorMessage = document.getElementById("errorMessage") as HTMLElement;
+
   // Register new user
   document.getElementById("registerUserBtn")?.addEventListener("click", async () => {
     const email = (document.getElementById("emailInput") as HTMLInputElement).value;
     const password = (document.getElementById("passwordInput") as HTMLInputElement).value;
+    
+    errorMessage.textContent = "";
+
     try {
       await registerUser(email, password);
       renderListPage();
     } catch (error) {
       console.error(error);
+      if (error instanceof Error && error.message.includes("User already exists")) {
+        errorMessage.textContent = "User already exists. Please try logging in.";
+      } else {
+        errorMessage.textContent = "An error occurred. Please try again.";
+      }
     }
   });
 
@@ -59,11 +70,15 @@ function renderLoginPage() : void {
   document.getElementById("loginBtn")?.addEventListener("click", async () => {
     const email = (document.getElementById("emailInput") as HTMLInputElement).value;
     const password = (document.getElementById("passwordInput") as HTMLInputElement).value;
+    
+    errorMessage.textContent = "";
+
     try {
       await loginUser(email, password);
       renderListPage();
     } catch (error) {
       console.error(error);
+      errorMessage.textContent = "Incorrect email or password. Please try again.";
     }
   });
 }

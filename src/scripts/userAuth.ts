@@ -2,7 +2,12 @@ import { supabase } from "./supabaseClient.ts";
 
 export async function registerUser(email: string, password: string) {
   const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) throw error;
+  if (error) {
+    if (error.message.includes("User already registered")) {
+      throw new Error("User already exists");
+    }
+    throw error;
+  }
   return data.user;
 }
 
