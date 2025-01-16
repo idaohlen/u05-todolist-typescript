@@ -18,6 +18,12 @@ interface Todo {
   userId: number;
 }
 
+async function checkUserStatus() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) renderListPage();
+  else renderLoginPage();
+}
+
 function renderLoginPage() : void {
   appContainer.classList.remove("todolist-page");
   appContainer.classList.add("login-page");
@@ -66,7 +72,7 @@ function renderLoginPage() : void {
     }
   });
 
-  // Login existing user
+  // Log in existing user
   document.getElementById("loginBtn")?.addEventListener("click", async () => {
     const email = (document.getElementById("emailInput") as HTMLInputElement).value;
     const password = (document.getElementById("passwordInput") as HTMLInputElement).value;
@@ -106,7 +112,7 @@ function renderListPage() : void {
     <div class="new-todo">
       <form id="newTodoForm">
         <input type="text" class="new-todo__input" id="todoInput" placeholder="Take the dog for a walk...">
-        <button class="new-todo__btn"><iconify-icon icon="solar:add-circle-bold"></iconify-icon></button>
+        <button id="addTodoBtn" class="new-todo__btn"><iconify-icon icon="solar:add-circle-bold"></iconify-icon></button>
       </form>
     </div>
 
@@ -189,7 +195,5 @@ async function renderTodos() {
   todosContainer.innerHTML = todoList;
 }
 
-// Initialization code
-
-// renderListPage();
-renderLoginPage();
+// Check user status on page load and render relevant page content
+checkUserStatus();
