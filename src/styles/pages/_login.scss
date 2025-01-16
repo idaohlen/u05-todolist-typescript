@@ -1,3 +1,11 @@
+#app.login-page {
+  max-width: 400px;
+  height: auto;
+  min-height: 600px;
+  padding-bottom: 4rem;
+  margin: auto;
+}
+
 .login-form {
   margin-inline: auto;
   width: 100%;
@@ -6,11 +14,34 @@
   flex-direction: column;
   gap: 1rem;
 
+  &__row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  &__icon {
+    font-size: 2rem;
+    margin-right: 1rem;
+  }
+
   input {
-    padding: .5rem;
+    width: 100%;
+    padding: .5rem .7rem;
+    background: #F1F1F1;
+    border: 1.5px solid transparent;
+    border-radius: 7px;
+    font-style: italic;
+
+    &:focus {
+      outline: none;
+      border-color: #BDBDBD;
+
+    }
   }
 
   &__buttons {
+    margin-top: 1rem;
     width: 100%;
     display: flex;
     gap: 1rem;

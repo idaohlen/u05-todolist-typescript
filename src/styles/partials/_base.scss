@@ -23,6 +23,8 @@ body {
   font-size: 1.6rem;
   background: linear-gradient($primary-color, $secondary-color);
   background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
 }
 
 input {
