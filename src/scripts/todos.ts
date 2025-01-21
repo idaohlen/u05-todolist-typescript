@@ -14,7 +14,7 @@ export async function addTodo(
   todo: string,
   userId: string,
   category: string = '',
-  dueBy: number | null = null
+  dueBy: string | null = null
 ){
   const { data, error } = await supabase
     .from('todos')

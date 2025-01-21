@@ -3,9 +3,12 @@ import "@fontsource-variable/sofia-sans";
 import "@fontsource-variable/playwrite-us-trad";
 import "./styles/style.scss";
 
-import { getTodos } from "./scripts/todos.ts";
+import { getTodos, addTodo } from "./scripts/todos.ts";
 import { supabase } from "./scripts/supabaseClient.ts";
 import { registerUser, loginUser, logoutUser } from "./scripts/userAuth.ts";
+
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.min.css";
 
 const appContainer = document.querySelector("#app") as HTMLElement;
 
@@ -14,7 +17,7 @@ interface Todo {
   todo: string;
   category: string;
   completed: boolean;
-  dueBy: number;
+  due_by: string | null;
   userId: number;
 }
 
@@ -24,7 +27,66 @@ async function checkUserStatus() {
   else renderLoginPage();
 }
 
-function renderLoginPage() : void {
+async function handleRegisterUser() {
+  const email = (document.getElementById("emailInput") as HTMLInputElement).value;
+  const password = (document.getElementById("passwordInput") as HTMLInputElement).value;
+  const errorMessage = document.getElementById("errorMessage") as HTMLElement;
+  
+  errorMessage.textContent = "";
+
+  try {
+    await registerUser(email, password);
+    renderListPage();
+  } catch (error) {
+    console.error(error);
+    if (error instanceof Error && error.message.includes("User already exists")) {
+      errorMessage.textContent = "User already exists. Please try logging in.";
+    } else {
+      errorMessage.textContent = "An error occurred. Please try again.";
+    }
+  }
+}
+
+async function handleUserLogin() {
+  const email = (document.getElementById("emailInput") as HTMLInputElement).value;
+  const password = (document.getElementById("passwordInput") as HTMLInputElement).value;
+  const errorMessage = document.getElementById("errorMessage") as HTMLElement;
+
+  errorMessage.textContent = "";
+
+  try {
+    await loginUser(email, password);
+    renderListPage();
+  } catch (error) {
+    console.error(error);
+    errorMessage.textContent = "Incorrect email or password. Please try again.";
+  }
+}
+
+async function HandleUserLogout() {
+  console.log("logging out...");
+  try {
+    await logoutUser();
+    renderLoginPage();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function editCategories() {
+  console.log("Edit Categories clicked");
+}
+
+function deleteUser() {
+  console.log("Delete User clicked");
+}
+
+function toggleSettingsMenu() {
+  const settingsMenu = document.getElementById("settingsMenu") as HTMLElement;
+  settingsMenu.classList.toggle("show");
+}
+
+function renderLoginPage() {
   appContainer.classList.remove("todolist-page");
   appContainer.classList.add("login-page");
 
@@ -50,46 +112,14 @@ function renderLoginPage() : void {
     </div>
   `;
 
-  const errorMessage = document.getElementById("errorMessage") as HTMLElement;
+  const registerUserBtn = document.getElementById("registerUserBtn") as HTMLElement;
+  const loginBtn = document.getElementById("loginBtn") as HTMLElement;
 
-  // Register new user
-  document.getElementById("registerUserBtn")?.addEventListener("click", async () => {
-    const email = (document.getElementById("emailInput") as HTMLInputElement).value;
-    const password = (document.getElementById("passwordInput") as HTMLInputElement).value;
-    
-    errorMessage.textContent = "";
-
-    try {
-      await registerUser(email, password);
-      renderListPage();
-    } catch (error) {
-      console.error(error);
-      if (error instanceof Error && error.message.includes("User already exists")) {
-        errorMessage.textContent = "User already exists. Please try logging in.";
-      } else {
-        errorMessage.textContent = "An error occurred. Please try again.";
-      }
-    }
-  });
-
-  // Log in existing user
-  document.getElementById("loginBtn")?.addEventListener("click", async () => {
-    const email = (document.getElementById("emailInput") as HTMLInputElement).value;
-    const password = (document.getElementById("passwordInput") as HTMLInputElement).value;
-    
-    errorMessage.textContent = "";
-
-    try {
-      await loginUser(email, password);
-      renderListPage();
-    } catch (error) {
-      console.error(error);
-      errorMessage.textContent = "Incorrect email or password. Please try again.";
-    }
-  });
+  registerUserBtn?.addEventListener("click", handleRegisterUser); // register new user
+  loginBtn?.addEventListener("click", handleUserLogin);           // log in existing user
 }
 
-function renderListPage() : void {
+async function renderListPage() {
   appContainer.classList.remove("login-page");
   appContainer.classList.add("todolist-page");
 
@@ -113,6 +143,7 @@ function renderListPage() : void {
       <form id="newTodoForm" class="new-todo__form">
         <iconify-icon icon="solar:menu-dots-bold" id="chooseCategoryBtn" class="new-todo__icon"></iconify-icon>
         <input type="text" class="new-todo__input" id="todoInput" placeholder="Take the dog for a walk...">
+        <input type="text" id="dueByInput" class="hidden-input">
         <button id="dueByBtn" class="new-todo__dueby-btn"><iconify-icon icon="solar:calendar-bold"></iconify-icon></button>
         <button id="addTodoBtn" class="new-todo__add-btn"><iconify-icon icon="solar:add-circle-bold"></iconify-icon></button>
       </form>
@@ -129,63 +160,112 @@ function renderListPage() : void {
     </div>
   `;
 
-  document.getElementById("settingsBtn")?.addEventListener("click", () => {
-    const settingsMenu = document.getElementById("settingsMenu") as HTMLElement;
-    settingsMenu.classList.toggle("show");
-  });
+  const todoForm = document.getElementById("newTodoForm") as HTMLFormElement;
+  const dueByBtn = document.getElementById("dueByBtn") as HTMLFormElement;
+  const errorMessage = document.getElementById("errorMessage") as HTMLElement;
 
-  document.getElementById("logoutBtn")?.addEventListener("click", async () => {
-    console.log("logging out...");
-    try {
-      await logoutUser();
-      renderLoginPage();
-    } catch (error) {
-      console.error(error);
+  const settingsBtn = document.getElementById("settingsBtn") as HTMLInputElement;
+  const logoutBtn = document.getElementById("logoutBtn") as HTMLInputElement;
+  const editCategoriesBtn = document.getElementById("editCategoriesBtn") as HTMLInputElement;
+  const deleteUserBtn = document.getElementById("deleteUserBtn") as HTMLInputElement;
+  
+  const todoInput = document.getElementById("todoInput") as HTMLInputElement;
+  const dueByInput = document.getElementById("dueByInput") as HTMLInputElement;
+
+  // Event listeners for settings menu
+
+  settingsBtn?.addEventListener("click", toggleSettingsMenu);
+  editCategoriesBtn?.addEventListener("click", editCategories);
+  deleteUserBtn?.addEventListener("click", deleteUser);
+  logoutBtn?.addEventListener("click", HandleUserLogout);
+
+  // Apply flatpickr to due-by input element
+  const fp = flatpickr(dueByInput, {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    positionElement: dueByBtn,
+    // Display a clear button in the calendar window
+    onReady: (selectedDates, dateStr, instance) => {
+      const clearButton = document.createElement("button");
+      clearButton.type = "button";
+      clearButton.className = "flatpickr-clear";
+      clearButton.textContent = "Clear";
+      clearButton.addEventListener("click", () => {
+        instance.clear();
+        instance.close();
+      });
+      instance.calendarContainer.appendChild(clearButton);
+    },
+    // Change color of the calendar icon depending on input value
+    onChange: (selectedDates, dateStr, instance) => {
+      if (dateStr) {
+        dueByBtn.classList.add("has-value");
+      } else {
+        dueByBtn.classList.remove("has-value");
+      }
     }
   });
 
-  document.getElementById("editCategoriesBtn")?.addEventListener("click", () => {
-    console.log("Edit Categories clicked");
+  // Open/close flatpickr calendar window
+  dueByBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (fp.isOpen) {
+      fp.close();
+    } else {
+      fp.open();
+    }
   });
 
-  document.getElementById("deleteUserBtn")?.addEventListener("click", () => {
-    console.log("Delete User clicked");
-  });
-
-  renderTodos();
-
-  const todoForm = document.querySelector("#newTodoForm") as HTMLFormElement;
-  const todoInput = document.querySelector("#todoInput") as HTMLInputElement;
-
-  // Event listeners
-
+  // New todo form submission
   todoForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    // await addTodo(todoInput.value);
-    await renderTodos();
-    todoInput.value = "";
+    const dueBy = dueByInput.value ? new Date(dueByInput.value).toISOString() : null;
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      try {
+        if (!todoInput.value.trim()) throw new Error("Todo cannot be empty.");
+
+        await addTodo(todoInput.value, user.id, '', dueBy);
+        const todos = await getTodos(user.id);
+
+        todoInput.value = "";
+        dueByInput.value = "";
+
+        renderTodos(todos);
+      } catch (e) {
+        console.log(e);
+      }
+    }
   });
+
+  // Fetch and render todos on page load
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const todos = await getTodos(user.id);
+    renderTodos(todos);
+  }
 }
 
-async function renderTodos() {
+async function renderTodos(todos: Todo[]) {
   const todosContainer = document.querySelector(".todos-container") as HTMLElement;
 
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const todoList = todos.map(({ id, todo, completed, due_by }: Todo) => {
+    const formattedDueBy = due_by ? new Date(due_by).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }) + ', ' + new Date(due_by).toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }) : '';
 
-  if (error || !user) {
-    console.error("User not logged in");
-    return;
-  }
-
-  const todos = await getTodos(user.id);
-
-  const todoList = todos.map(({id, todo, completed, dueBy}: Todo) => {
     return `
       <div class="todo" data-todoId="${id}">
         <div class="todo__icon"><iconify-icon icon="solar:home-bold"></iconify-icon></div>
         <div class="todo__info">
           <div class="todo__title">${todo}</div>
-          <div class="todo__due-date pill">${dueBy}</div>
+          ${formattedDueBy ? `<div class="todo__due-date pill">${formattedDueBy}</div>` : ''}
         </div>
         <label class="todo__checkbox">
           <input type="checkbox" ${completed ? "checked" : ""}>

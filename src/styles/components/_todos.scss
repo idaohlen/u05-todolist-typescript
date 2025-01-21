@@ -182,47 +182,24 @@
     &:hover {
       color: #8e8e8e;
     }
+
+    &.has-value {
+    color: $primary-color;
+    }
   }
-  
-  // &__input {
-  //   width: 100%;
-  //   font-family: inherit;
-  //   font-size: inherit;
-  //   padding: 1.5rem 2.2rem;
-  //   border-radius: 200px;
-  //   border: 2px solid $primary-color;
-  // }
+}
 
-  // &__add-btn, &__dueby-btn {
-  //   display: flex;
-  //   align-items: center;
-  //   margin: 0;
-  //   padding: 0;
-  //   position: absolute;
-  //   top: 0;
-  //   bottom: 0;
-  //   background: none;
-  //   border: none;
-  //   transition: all .4s;
-  // }
+.hidden-input {
+  position: absolute;
+  left: -9999px;
+}
 
-  // &__add-btn {
-  //   right: .7rem;
-  //   color: $secondary-color;
-  //   font-size: 4rem;
-
-  //   &:hover {
-  //     color: $primary-color;
-  //   }
-  // }
-
-  // &__dueby-btn {
-  //   right: 5rem;
-  //   font-size: 3rem;
-  //   color: #B5B5B5;
-
-  //   &:hover {
-  //     color: #8e8e8e;
-  //   }
-  // }
+.flatpickr-clear {
+  float: right;
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: .5rem 1rem;
+  cursor: pointer;
+  margin: 1rem;
 }
