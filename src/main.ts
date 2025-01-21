@@ -231,6 +231,7 @@ async function renderListPage() {
 
         todoInput.value = "";
         dueByInput.value = "";
+        dueByBtn.classList.remove("has-value");
 
         renderTodos(todos);
       } catch (e) {
