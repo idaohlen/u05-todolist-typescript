@@ -2,9 +2,9 @@ import { supabase } from "./supabaseClient.ts";
 
 export async function getTodos(userId: string) {
   const { data, error } = await supabase
-    .from('todos')
-    .select('*')
-    .eq('user_id', userId);
+    .from("todos")
+    .select("*")
+    .eq("user_id", userId);
 
   if (error) throw error;
   return data;
@@ -13,11 +13,11 @@ export async function getTodos(userId: string) {
 export async function addTodo(
   todo: string,
   userId: string,
-  category: string = '',
+  category: string = "",
   dueBy: string | null = null
 ){
   const { data, error } = await supabase
-    .from('todos')
+    .from("todos")
     .insert([{
       todo,
       user_id: userId,
@@ -25,6 +25,16 @@ export async function addTodo(
       due_by: dueBy,
       completed: false
     }]);
+
+  if (error) throw error;
+  return data;
+}
+
+export async function updateTodoCompletedStatus(todoId: string, completed: boolean) {
+  const { data, error } = await supabase
+    .from("todos")
+    .update({ completed })
+    .eq("id", todoId);
 
   if (error) throw error;
   return data;

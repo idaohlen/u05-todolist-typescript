@@ -3,7 +3,7 @@ import "@fontsource-variable/sofia-sans";
 import "@fontsource-variable/playwrite-us-trad";
 import "./styles/style.scss";
 
-import { getTodos, addTodo } from "./scripts/todos.ts";
+import { getTodos, addTodo, updateTodoCompletedStatus } from "./scripts/todos.ts";
 import { supabase } from "./scripts/supabaseClient.ts";
 import { registerUser, loginUser, logoutUser } from "./scripts/userAuth.ts";
 
@@ -13,7 +13,7 @@ import "flatpickr/dist/flatpickr.min.css";
 const appContainer = document.querySelector("#app") as HTMLElement;
 
 interface Todo {
-  id: number;
+  id: string;
   todo: string;
   category: string;
   completed: boolean;
@@ -162,7 +162,6 @@ async function renderListPage() {
 
   const todoForm = document.getElementById("newTodoForm") as HTMLFormElement;
   const dueByBtn = document.getElementById("dueByBtn") as HTMLFormElement;
-  const errorMessage = document.getElementById("errorMessage") as HTMLElement;
 
   const settingsBtn = document.getElementById("settingsBtn") as HTMLInputElement;
   const logoutBtn = document.getElementById("logoutBtn") as HTMLInputElement;
@@ -262,7 +261,7 @@ async function renderTodos(todos: Todo[]) {
     }) : '';
 
     return `
-      <div class="todo" data-todoId="${id}">
+      <div class="todo ${completed ? "completed" : ""}" data-todo-id="${id}">
         <div class="todo__icon"><iconify-icon icon="solar:home-bold"></iconify-icon></div>
         <div class="todo__info">
           <div class="todo__title">${todo}</div>
@@ -270,12 +269,42 @@ async function renderTodos(todos: Todo[]) {
         </div>
         <label class="todo__checkbox">
           <input type="checkbox" ${completed ? "checked" : ""}>
-          <span class="checkmark"></span>
+          <span class="checkmark">
+            <iconify-icon icon="fa:check" class="check-icon"></iconify-icon>
+          </span>
         </label>
       </div>`;
   }).join("");
 
   todosContainer.innerHTML = todoList;
+
+  // Event listener for updating todo "completed" status
+  const checkboxes = todosContainer.querySelectorAll(".todo__checkbox input[type='checkbox']");
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener("change", async (e) => {
+      const target = e.target as HTMLInputElement;
+      const todoElement = target.closest(".todo") as HTMLElement;
+      if (!todoElement) return; // check that parent todo element exists
+
+      const todoId = todoElement.dataset.todoId;
+      if (!todoId) return; // check that todo-id is defined
+
+      const completed = target.checked;
+
+      try {
+        const todoElement = target.closest(".todo");
+        await updateTodoCompletedStatus(todoId, completed);
+        
+        if (completed) {
+          todoElement?.classList.add("completed");
+        } else {
+          todoElement?.classList.remove("completed");
+        }
+      } catch (error) {
+        console.error("Error updating todo status:", error);
+      }
+    });
+  });
 }
 
 // Check user status on page load and render relevant page content

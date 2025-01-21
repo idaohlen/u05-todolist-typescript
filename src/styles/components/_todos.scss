@@ -25,6 +25,10 @@
   cursor: pointer;
   transition: all .4s;
 
+  &.completed {
+    opacity: .5;
+  }
+
   &:hover {
     outline-color: $color-red;
   }
