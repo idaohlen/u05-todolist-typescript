@@ -180,7 +180,7 @@ async function renderListPage() {
     dateFormat: "Y-m-d H:i",
     positionElement: dueByBtn,
     // Display a clear button in the calendar window
-    onReady: (selectedDates, dateStr, instance) => {
+    onReady: (_selectedDates, _dateStr, instance) => {
       const clearButton = document.createElement("button");
       clearButton.type = "button";
       clearButton.className = "flatpickr-clear";
@@ -192,7 +192,7 @@ async function renderListPage() {
       instance.calendarContainer.appendChild(clearButton);
     },
     // Change color of the calendar icon depending on input value
-    onChange: (selectedDates, dateStr, instance) => {
+    onChange: (_selectedDates, dateStr, _instance) => {
       if (dateStr) {
         dueByBtn.classList.add("has-value");
       } else {
