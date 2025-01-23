@@ -15,10 +15,6 @@ const ListPage = `
           <iconify-icon icon="solar:trash-bin-trash-bold"></iconify-icon>
           Delete all todos
         </button>
-        <button id="deleteAccountBtn" class="settings-menu__item">
-          <iconify-icon icon="solar:user-bold"></iconify-icon>
-          Delete account
-        </button>
         <button id="logoutBtn" class="settings-menu__item">
           <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
           Logout

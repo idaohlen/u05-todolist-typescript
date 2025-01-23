@@ -354,22 +354,16 @@ function setupSettingsMenu() {
   const settingsBtn = document.getElementById("settingsBtn") as HTMLInputElement;
   const logoutBtn = document.getElementById("logoutBtn") as HTMLInputElement;
   const editCategoriesBtn = document.getElementById("editCategoriesBtn") as HTMLInputElement;
-  const deleteAccountBtn = document.getElementById("deleteAccountBtn") as HTMLInputElement;
   const deleteAllTodosBtn = document.getElementById("deleteAllTodosBtn") as HTMLInputElement;
 
   settingsBtn?.addEventListener("click", toggleSettingsMenu);
   editCategoriesBtn?.addEventListener("click", editCategories);
-  deleteAccountBtn?.addEventListener("click", deleteAccount);
   logoutBtn?.addEventListener("click", HandleUserLogout);
   deleteAllTodosBtn?.addEventListener("click", handleDeleteAllTodos);
 }
 
 function editCategories() {
   console.log("Edit Categories clicked");
-}
-
-function deleteAccount() {
-  console.log("Delete account clicked");
 }
 
 async function handleDeleteAllTodos() {
