@@ -33,6 +33,13 @@ const ListPage = `
     </form>
   </div>
 
+  <div class="dueby-filters">
+    <button class="btn filter-btn sactive-filter">All</button>
+    <button class="btn filter-btn">Today</button>
+    <button class="btn filter-btn">This week</button>
+    <button class="btn filter-btn">This month</button>
+  </div>
+
   <div class="todos-container"></div>
 
   <div class="categories-container">

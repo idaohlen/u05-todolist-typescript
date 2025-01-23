@@ -1,0 +1,21 @@
+@use "../partials/variables" as *;
+
+.dueby-filters {
+  padding: 0 3rem 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+
+  .btn {
+    background: #FFD8D8;
+    color: black;
+    font-weight: 600;
+    padding: 1rem 2rem;
+    flex: 1;
+
+    &.active-filter {
+      background: transparent;
+      border: 2.5px solid $primary-color;
+    }
+  }
+}

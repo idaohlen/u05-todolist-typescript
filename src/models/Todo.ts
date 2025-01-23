@@ -4,5 +4,6 @@ export default interface Todo {
   category: string;
   completed: boolean;
   due_by: string | null;
+  created_at: string;
   userId: number;
 }

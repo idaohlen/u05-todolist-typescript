@@ -33,6 +33,11 @@ import Todo from "./models/Todo.ts";
 // HTML elements
 const appContainer = document.querySelector("#app") as HTMLElement;
 
+// Todo filters
+let allTodos: Todo[] = [];
+let categoryFilters: string[] = [];
+let dueDateFilter: "today" | "this_week" | "this_month" | "all" = "all";
+
 
 /* ---------------------------------------------- */
 // LOGIN PAGE
@@ -115,19 +120,60 @@ async function renderListPage() {
   setupSettingsMenu();
   setupNewTodoForm();
   setupEditTodoModal();
+  setupDueByFilters();
 
   // Fetch and render todos on page render
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
-    const todos = await getTodos(user.id);
-    renderTodos(todos);
+    allTodos = await getTodos(user.id);
+    renderTodos();
   }
 }
 
 // Render todos in the todos-container
-async function renderTodos(todos: Todo[] = []) {
+async function renderTodos(todos: Todo[] = allTodos) {
   const todosContainer = document.querySelector(".todos-container") as HTMLElement;
-  const todoList = todos.map((todo: Todo) => TodoElement(todo)).join("");
+
+  // Apply category filters
+  let filteredTodos = todos.filter(todo => {
+    if (categoryFilters.length === 0) return true;
+    if (categoryFilters.includes(todo.category)) return true;
+    if (categoryFilters.includes("none") && !todo.category) return true;
+    return false;
+  });
+
+  // Apply due date filters
+  const now = new Date();
+
+  filteredTodos = filteredTodos.filter(todo => {
+    if (dueDateFilter === "all") return true;
+    const dueDate = todo.due_by ? new Date(todo.due_by) : null;
+
+    if (!dueDate) return false;
+
+    if (dueDateFilter === "today") {
+      return dueDate.toDateString() === now.toDateString();
+    } else if (dueDateFilter === "this_week") {
+      const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+      const endOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 6));
+      return dueDate >= startOfWeek && dueDate <= endOfWeek;
+    } else if (dueDateFilter === "this_month") {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      return dueDate >= startOfMonth && dueDate <= endOfMonth;
+    }
+    return false;
+  });
+
+  // Sort todos by due date and then by creation date
+  filteredTodos.sort((a, b) => {
+    const dueDateA = a.due_by ? new Date(a.due_by).getTime() : Infinity;
+    const dueDateB = b.due_by ? new Date(b.due_by).getTime() : Infinity;
+    if (dueDateA !== dueDateB) return dueDateA - dueDateB;
+    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+  });
+
+  const todoList = filteredTodos.map((todo: Todo) => TodoElement(todo)).join("");
 
   todosContainer.innerHTML = todoList;
 
@@ -173,6 +219,33 @@ async function handleupdateTodoCompletedStatus(checkbox: HTMLInputElement) {
 
 
 /* ---------------------------------------------- */
+// TODO FILTERS
+/* ---------------------------------------------- */
+
+function setupDueByFilters() {
+  const dueByFilters = document.querySelectorAll(".dueby-filters .filter-btn");
+  dueByFilters.forEach(button => {
+    button.addEventListener("click", () => {
+      dueByFilters.forEach(btn => btn.classList.remove("active-filter"));
+      button.classList.add("active-filter");
+
+      const filter = button.textContent?.toLowerCase().replace(" ", "_") as "today" | "this_week" | "this_month" | "all";
+      setDueDateFilter(filter);
+    });
+  });
+}
+
+function setCategoryFilters(categories: string[]) {
+  categoryFilters = categories;
+  renderTodos();
+}
+
+function setDueDateFilter(filter: "today" | "this_week" | "this_month" | "all") {
+  dueDateFilter = filter;
+  renderTodos();
+}
+
+/* ---------------------------------------------- */
 // NEW TODO FORM
 /* ---------------------------------------------- */
 
@@ -202,7 +275,7 @@ function setupNewTodoForm() {
         dueByInput.value = "";
         dueByBtn.classList.remove("has-value");
 
-        renderTodos(todos);
+        renderTodos();
       } catch (e) {
         console.log(e);
       }
@@ -266,8 +339,8 @@ async function handleEditTodo(todoElement: HTMLElement) {
 
     try {
       await updateTodo(todoId, updatedTodo, updatedDueBy);
-      const todos = await getTodos(user.id);
-      renderTodos(todos);
+      allTodos = await getTodos(user.id);
+      renderTodos();
       editTodoDialog.close();
     } catch (error) {
       console.error("Error updating todo:", error);
@@ -278,8 +351,8 @@ async function handleEditTodo(todoElement: HTMLElement) {
   deleteTodoBtn.onclick = async () => {
     try {
       await deleteTodo(todoId);
-      const todos = await getTodos(user.id);
-      renderTodos(todos);
+      allTodos = await getTodos(user.id);
+      renderTodos();
       editTodoDialog.close();
     } catch (error) {
       console.error("Error deleting todo:", error);
@@ -373,7 +446,7 @@ async function handleDeleteAllTodos() {
 
   try {
     await deleteAllTodos(user.id);
-    renderTodos();
+    renderTodos([]);
     toggleSettingsMenu();
 
   } catch (error) {
