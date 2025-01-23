@@ -3,7 +3,7 @@ import "@fontsource-variable/sofia-sans";
 import "@fontsource-variable/playwrite-us-trad";
 import "./styles/style.scss";
 
-import { getTodos, addTodo, updateTodoCompletedStatus } from "./scripts/todos.ts";
+import { getTodos, addTodo, deleteTodo, updateTodo, updateTodoCompletedStatus } from "./scripts/todos.ts";
 import { supabase } from "./scripts/supabaseClient.ts";
 import { registerUser, loginUser, logoutUser } from "./scripts/userAuth.ts";
 
@@ -153,6 +153,26 @@ async function renderListPage() {
         <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
         <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
     </div>
+
+    <dialog id="editTodoDialog" class="todo-dialog">
+    <button id="cancelBtn" value="cancel" class="todo-dialog__cancel-btn">
+      <iconify-icon icon="icon-park-outline:close-one" class="icon"></iconify-icon>
+    </button>
+      <form method="dialog">
+        <h2 class="todo-dialog__heading">Edit todo</h2>
+        <div class="todo-dialog__form-inputs">
+          <input type="text" id="editTodoInput" class="todo-dialog__todo-input">
+          <input type="text" id="editDueByInput" class="hidden-input">
+          <button id="editDueByInputBtn" class="new-todo__dueby-btn edit-todo__dueby-btn">
+            <iconify-icon icon="solar:calendar-bold"></iconify-icon>
+          </button>
+        </div>
+        <div class="todo-dialog__actions">
+          <button id="deleteTodoBtn" value="delete" class="todo-dialog__delete-btn">Delete</button>
+          <button id="saveTodoBtn" value="save" class="todo-dialog__save-btn">Save</button>
+        </div>
+      </form>
+    </dialog>
   `;
 
   // SETTINGS MENU
@@ -178,6 +198,7 @@ async function renderListPage() {
   const fp = flatpickr(dueByInput, {
     enableTime: true,
     dateFormat: "Y-m-d H:i",
+    position: "auto",
     positionElement: dueByBtn,
     // Display a clear button in the calendar window
     onReady: (_selectedDates, _dateStr, instance) => {
@@ -205,11 +226,8 @@ async function renderListPage() {
   // TODO: not working properly
   dueByBtn?.addEventListener("click", (e) => {
     e.preventDefault();
-    if (fp.isOpen) {
-      fp.close();
-    } else {
-      fp.open();
-    }
+    if (fp.isOpen) fp.close();
+    else fp.open();
   });
 
   // New todo form submission
@@ -222,7 +240,7 @@ async function renderListPage() {
       try {
         if (!todoInput.value.trim()) throw new Error("Todo cannot be empty.");
 
-        await addTodo(todoInput.value, user.id, '', dueBy);
+        await addTodo(todoInput.value, user.id, "", dueBy);
         const todos = await getTodos(user.id);
 
         todoInput.value = "";
@@ -234,6 +252,48 @@ async function renderListPage() {
         console.log(e);
       }
     }
+  });
+
+  // EDIT TODO
+
+  const editDueByInput = document.getElementById("editDueByInput") as HTMLInputElement;
+  const editDueByInputBtn = document.getElementById("editDueByInputBtn") as HTMLInputElement;
+  const editTodoDialog = document.getElementById("editTodoDialog") as HTMLElement;
+
+  const fpEdit = flatpickr(editDueByInput, {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    position: "auto",
+    positionElement: editDueByInputBtn,
+    appendTo: editTodoDialog,
+
+    // Display a clear button in the calendar window
+    onReady: (_selectedDates, _dateStr, instance) => {
+      const clearButton = document.createElement("button");
+      clearButton.type = "button";
+      clearButton.className = "flatpickr-clear";
+      clearButton.textContent = "Clear";
+      clearButton.addEventListener("click", () => {
+        instance.clear();
+        instance.close();
+      });
+      instance.calendarContainer.appendChild(clearButton);
+      instance.calendarContainer.style.position = "fixed";
+    },
+    // Change color of the calendar icon depending on input value
+    onChange: (_selectedDates, dateStr, _instance) => {
+      if (dateStr) {
+        editDueByInputBtn.classList.add("has-value");
+      } else {
+        editDueByInputBtn.classList.remove("has-value");
+      }
+    }
+  });
+
+  editDueByInputBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (fpEdit.isOpen) fpEdit.close();
+    else fpEdit.open();
   });
 
   // RENDER TODOS
@@ -251,14 +311,14 @@ async function renderTodos(todos: Todo[]) {
 
   const todoList = todos.map(({ id, todo, completed, due_by }: Todo) => {
     // Format due-date to spec. formatting
-    const formattedDueBy = due_by ? new Date(due_by).toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    }) + ', ' + new Date(due_by).toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-    }) : '';
+    const formattedDueBy = due_by ? new Date(due_by).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }) + ", " + new Date(due_by).toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }) : "";
 
     return `
       <div class="todo ${completed ? "completed" : ""}" data-todo-id="${id}">
@@ -287,7 +347,79 @@ async function renderTodos(todos: Todo[]) {
       const checkbox = target as HTMLInputElement;
       handleupdateTodoCompletedStatus(checkbox);
     }
+
+    if (target.closest(".todo") && !target.closest(".todo__checkbox")) {
+      handleEditTodo(target.closest(".todo") as HTMLElement);
+    }
   });
+}
+
+async function handleEditTodo(todoElement: HTMLElement) {
+  const editTodoDialog = document.getElementById("editTodoDialog") as HTMLDialogElement;
+  const editTodoInput = document.getElementById("editTodoInput") as HTMLInputElement;
+  const editDueByInput = document.getElementById("editDueByInput") as HTMLInputElement;
+  const editDueByInputBtn = document.getElementById("editDueByInputBtn") as HTMLInputElement;
+  const saveTodoBtn = document.getElementById("saveTodoBtn") as HTMLButtonElement;
+  const deleteTodoBtn = document.getElementById("deleteTodoBtn") as HTMLButtonElement;
+  const cancelBtn = document.getElementById("cancelBtn") as HTMLButtonElement;
+
+  const todoId = todoElement.dataset.todoId;
+  if (!todoId) return;
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const todos = await getTodos(user.id);
+  const todo = todos.find(t => t.id === todoId);
+  if (!todo) return;
+
+  editTodoInput.value = todo.todo;
+  editDueByInput.value = todo.due_by ? new Date(todo.due_by).toISOString().slice(0, 16) : "";
+
+  // Add class depending on if todo has due by date or not
+  if (todo.due_by) editDueByInputBtn.classList.add("has-value");
+  else editDueByInputBtn.classList.remove("has-value");
+
+  editTodoDialog.showModal();
+
+  // Close dialog when clicking on the backdrop
+  editTodoDialog.addEventListener("click", (e) => {
+    if (e.target === editTodoDialog) {
+      editTodoDialog.close();
+    }
+  });
+
+  // Save todo edits
+  saveTodoBtn.onclick = async () => {
+    const updatedTodo = editTodoInput.value.trim();
+    const updatedDueBy = editDueByInput.value ? new Date(editDueByInput.value).toISOString() : null;
+
+    try {
+      await updateTodo(todoId, updatedTodo, updatedDueBy);
+      const todos = await getTodos(user.id);
+      renderTodos(todos);
+      editTodoDialog.close();
+    } catch (error) {
+      console.error("Error updating todo:", error);
+    }
+  };
+
+  // Delete current todo in edit modal
+  deleteTodoBtn.onclick = async () => {
+    try {
+      await deleteTodo(todoId);
+      const todos = await getTodos(user.id);
+      renderTodos(todos);
+      editTodoDialog.close();
+    } catch (error) {
+      console.error("Error deleting todo:", error);
+    }
+  };
+
+  // Cancel todo edit/close modal
+  cancelBtn.onclick = () => {
+    editTodoDialog.close();
+  };
 }
 
 // Handler for checking/unchecking a todo checkbox

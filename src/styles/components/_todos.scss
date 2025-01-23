@@ -208,3 +208,64 @@
   cursor: pointer;
   margin: 1rem;
 }
+
+.todo-dialog {
+  border: none;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+
+  &::backdrop {
+    background: $primary-color;
+    opacity: 60%;
+  }
+
+  &__heading {
+    margin-top: 0;
+    font-size: 2rem;
+  }
+
+  &__form-inputs {
+    display: flex;
+    margin-bottom: 2rem;
+    gap: 1rem;
+  }
+
+  &__todo-input {
+    width: 100%;
+    border: 1px solid $primary-color;
+    border-radius: 4px;
+    padding: 1rem;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+
+  &__cancel-btn {
+    float: right;
+    background: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .icon {
+      color: $primary-color;
+      font-size: 2.5rem;
+    }
+  }
+
+  &__save-btn {
+    background: $primary-color;
+    border-radius: 4px;
+  }
+
+  &__delete-btn {
+    background: gray;
+    border-radius: 4px;
+  }
+}

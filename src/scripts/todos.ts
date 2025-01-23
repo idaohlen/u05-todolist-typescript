@@ -16,7 +16,7 @@ export async function addTodo(
   category: string = "",
   dueBy: string | null = null
 ){
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("todos")
     .insert([{
       todo,
@@ -27,15 +27,31 @@ export async function addTodo(
     }]);
 
   if (error) throw error;
-  return data;
 }
 
 export async function updateTodoCompletedStatus(todoId: string, completed: boolean) {
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("todos")
     .update({ completed })
     .eq("id", todoId);
 
   if (error) throw error;
-  return data;
+}
+
+export async function updateTodo(todoId: string, updatedTodo: string, updatedDueBy: string | null) {
+  const { error } = await supabase
+    .from("todos")
+    .update({ todo: updatedTodo,  due_by: updatedDueBy })
+    .eq("id", todoId);
+
+  if (error) throw error;
+}
+
+export async function deleteTodo(todoId: string) {
+  const { error } = await supabase
+    .from("todos")
+    .delete()
+    .eq("id", todoId);
+
+  if (error) throw error;
 }
