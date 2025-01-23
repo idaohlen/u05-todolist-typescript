@@ -3,7 +3,7 @@ import "@fontsource-variable/sofia-sans";
 import "@fontsource-variable/playwrite-us-trad";
 import "./styles/style.scss";
 
-import { getTodos, addTodo, deleteTodo, updateTodo, updateTodoCompletedStatus } from "./scripts/todos.ts";
+import { getTodos, addTodo, deleteTodo, updateTodo, updateTodoCompletedStatus, deleteAllTodos } from "./scripts/todos.ts";
 import { supabase } from "./scripts/supabaseClient.ts";
 import { registerUser, loginUser, logoutUser } from "./scripts/userAuth.ts";
 
@@ -127,9 +127,22 @@ async function renderListPage() {
           <iconify-icon icon="solar:settings-outline"></iconify-icon>
         </button>
         <div id="settingsMenu" class="settings-menu">
-          <button id="editCategoriesBtn" class="settings-menu__item">Edit categories</button>
-          <button id="deleteUserBtn" class="settings-menu__item">Delete user</button>
-          <button id="logoutBtn" class="settings-menu__item">Logout</button>
+          <button id="editCategoriesBtn" class="settings-menu__item">
+            <iconify-icon icon="solar:server-minimalistic-bold"></iconify-icon>
+            Edit categories
+          </button>
+          <button id="deleteAllTodosBtn" class="settings-menu__item">
+            <iconify-icon icon="solar:trash-bin-trash-bold"></iconify-icon>
+            Delete all todos
+          </button>
+          <button id="deleteAccountBtn" class="settings-menu__item">
+            <iconify-icon icon="solar:user-bold"></iconify-icon>
+            Delete account
+          </button>
+          <button id="logoutBtn" class="settings-menu__item">
+            <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
+            Logout
+          </button>
         </div>
       </div>
     </header>
@@ -180,12 +193,14 @@ async function renderListPage() {
   const settingsBtn = document.getElementById("settingsBtn") as HTMLInputElement;
   const logoutBtn = document.getElementById("logoutBtn") as HTMLInputElement;
   const editCategoriesBtn = document.getElementById("editCategoriesBtn") as HTMLInputElement;
-  const deleteUserBtn = document.getElementById("deleteUserBtn") as HTMLInputElement;
+  const deleteAccountBtn = document.getElementById("deleteAccountBtn") as HTMLInputElement;
+  const deleteAllTodosBtn = document.getElementById("deleteAllTodosBtn") as HTMLInputElement;
 
   settingsBtn?.addEventListener("click", toggleSettingsMenu);
   editCategoriesBtn?.addEventListener("click", editCategories);
-  deleteUserBtn?.addEventListener("click", deleteUser);
+  deleteAccountBtn?.addEventListener("click", deleteAccount);
   logoutBtn?.addEventListener("click", HandleUserLogout);
+  deleteAllTodosBtn?.addEventListener("click", handleDeleteAllTodos);
 
   // NEW TODO FORM
 
@@ -306,7 +321,7 @@ async function renderListPage() {
 }
 
 // Render todos in the todos-container
-async function renderTodos(todos: Todo[]) {
+async function renderTodos(todos: Todo[] = []) {
   const todosContainer = document.querySelector(".todos-container") as HTMLElement;
 
   const todoList = todos.map(({ id, todo, completed, due_by }: Todo) => {
@@ -460,8 +475,22 @@ function editCategories() {
   console.log("Edit Categories clicked");
 }
 
-function deleteUser() {
-  console.log("Delete User clicked");
+function deleteAccount() {
+  console.log("Delete account clicked");
+}
+
+async function handleDeleteAllTodos() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  try {
+    await deleteAllTodos(user.id);
+    renderTodos();
+    toggleSettingsMenu();
+
+  } catch (error) {
+    console.error("Error deleting all todos:", error);
+  }
 }
 
 

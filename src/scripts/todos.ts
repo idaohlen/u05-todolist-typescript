@@ -55,3 +55,12 @@ export async function deleteTodo(todoId: string) {
 
   if (error) throw error;
 }
+
+export async function deleteAllTodos(userId: string) {
+  const { error } = await supabase
+    .from("todos")
+    .delete()
+    .eq("user_id", userId);
+
+  if (error) throw error;
+}
