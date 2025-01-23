@@ -63,9 +63,8 @@ async function handleRegisterUser() {
     await registerUser(email, password);
     renderListPage();
   } catch (error) {
-    console.error(error);
     if (error instanceof Error && error.message.includes("User already registered")) {
-      errorMessage.textContent = "User with that email already exists. Please try logging in or use another email.";
+      errorMessage.textContent = "User with that email already exists. Please try logging in or use another email address.";
     } else {
       errorMessage.textContent = "An error occurred. Please try again.";
     }
@@ -84,7 +83,9 @@ async function handleUserLogin() {
     await loginUser(email, password);
     renderListPage();
   } catch (error) {
-    errorMessage.textContent = "Incorrect email or password. Please try again.";
+    if (error instanceof Error) {
+      errorMessage.textContent = error.message;
+    }
   }
 }
 
