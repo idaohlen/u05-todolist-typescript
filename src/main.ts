@@ -1,25 +1,37 @@
-import "iconify-icon";
+// Styling
 import "@fontsource-variable/sofia-sans";
 import "@fontsource-variable/playwrite-us-trad";
 import "./styles/style.scss";
 
-import { getTodos, addTodo, deleteTodo, updateTodo, updateTodoCompletedStatus, deleteAllTodos } from "./scripts/todos.ts";
+// Libraries
+import "iconify-icon";
 import { supabase } from "./scripts/supabaseClient.ts";
-import { registerUser, loginUser, logoutUser } from "./scripts/userAuth.ts";
-
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 
-const appContainer = document.querySelector("#app") as HTMLElement;
+// Pages / Components
+import LoginPage from "./scripts/renderHTML/LoginPage.ts";
+import ListPage from "./scripts/renderHTML/ListPage.ts";
+import TodoElement from "./scripts/renderHTML/TodoElement.ts";
 
-interface Todo {
-  id: string;
-  todo: string;
-  category: string;
-  completed: boolean;
-  due_by: string | null;
-  userId: number;
-}
+// Scripts
+import {
+  getTodos,
+  addTodo,
+  deleteTodo,
+  updateTodo,
+  updateTodoCompletedStatus,
+  deleteAllTodos
+} from "./scripts/todos.ts";
+
+import { registerUser, loginUser, logoutUser } from "./scripts/userAuth.ts";
+// import { formatDate } from "./scripts/utils.ts";
+
+// Models
+import Todo from "./models/Todo.ts";
+
+// HTML elements
+const appContainer = document.querySelector("#app") as HTMLElement;
 
 
 /* ---------------------------------------------- */
@@ -30,27 +42,7 @@ function renderLoginPage() {
   appContainer.classList.remove("todolist-page");
   appContainer.classList.add("login-page");
 
-  appContainer.innerHTML = `
-    <header class="app-header">
-      <h1>Todo List</h1>
-      <iconify-icon icon="fa6-solid:pen-nib" class="app-header__icon"></iconify-icon>
-    </header>
-    <div class="login-form">
-      <div class="login-form__row">
-        <iconify-icon icon="solar:letter-outline" class="login-form__icon"></iconify-icon>
-        <input type="email" placeholder="email" id="emailInput">
-      </div>
-      <div class="login-form__row">
-        <iconify-icon icon="solar:lock-password-outline" class="login-form__icon"></iconify-icon>
-        <input type="password" placeholder="password" id="passwordInput">
-      </div>
-      <div id="errorMessage" class="error-message"></div>
-      <div class="login-form__buttons">
-        <button id="registerUserBtn" class="btn btn--outline">Register</button>
-        <button id="loginBtn" class="btn">Login</button>
-      </div>
-    </div>
-  `;
+  appContainer.innerHTML = LoginPage;
 
   const registerUserBtn = document.getElementById("registerUserBtn") as HTMLElement;
   const loginBtn = document.getElementById("loginBtn") as HTMLElement;
@@ -104,7 +96,7 @@ async function HandleUserLogout() {
     await logoutUser();
     renderLoginPage();
   } catch (error) {
-    console.error(error);
+    console.error("Error occured while trying to logout:", error);
   }
 }
 
@@ -118,75 +110,7 @@ async function renderListPage() {
   appContainer.classList.remove("login-page");
   appContainer.classList.add("todolist-page");
 
-  appContainer.innerHTML = `
-    <header class="app-header">
-      <h1>Todo List</h1>
-      <iconify-icon icon="fa6-solid:pen-nib" class="app-header__icon"></iconify-icon>
-      <div class="settings-container">
-        <button id="settingsBtn" class="settings-btn" title="Settings">
-          <iconify-icon icon="solar:settings-outline"></iconify-icon>
-        </button>
-        <div id="settingsMenu" class="settings-menu">
-          <button id="editCategoriesBtn" class="settings-menu__item">
-            <iconify-icon icon="solar:server-minimalistic-bold"></iconify-icon>
-            Edit categories
-          </button>
-          <button id="deleteAllTodosBtn" class="settings-menu__item">
-            <iconify-icon icon="solar:trash-bin-trash-bold"></iconify-icon>
-            Delete all todos
-          </button>
-          <button id="deleteAccountBtn" class="settings-menu__item">
-            <iconify-icon icon="solar:user-bold"></iconify-icon>
-            Delete account
-          </button>
-          <button id="logoutBtn" class="settings-menu__item">
-            <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
-            Logout
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <div class="new-todo">
-      <form id="newTodoForm" class="new-todo__form">
-        <iconify-icon icon="solar:menu-dots-bold" id="chooseCategoryBtn" class="new-todo__icon"></iconify-icon>
-        <input type="text" class="new-todo__input" id="todoInput" placeholder="Take the dog for a walk...">
-        <input type="text" id="dueByInput" class="hidden-input">
-        <button id="dueByBtn" class="new-todo__dueby-btn"><iconify-icon icon="solar:calendar-bold"></iconify-icon></button>
-        <button id="addTodoBtn" class="new-todo__add-btn"><iconify-icon icon="solar:add-circle-bold"></iconify-icon></button>
-      </form>
-    </div>
-
-    <div class="todos-container"></div>
-
-    <div class="categories-container">
-        <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
-        <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
-        <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
-        <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
-        <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
-    </div>
-
-    <dialog id="editTodoDialog" class="todo-dialog">
-    <button id="cancelBtn" value="cancel" class="todo-dialog__cancel-btn">
-      <iconify-icon icon="icon-park-outline:close-one" class="icon"></iconify-icon>
-    </button>
-      <form method="dialog">
-        <h2 class="todo-dialog__heading">Edit todo</h2>
-        <div class="todo-dialog__form-inputs">
-          <input type="text" id="editTodoInput" class="todo-dialog__todo-input">
-          <input type="text" id="editDueByInput" class="hidden-input">
-          <button id="editDueByInputBtn" class="new-todo__dueby-btn edit-todo__dueby-btn">
-            <iconify-icon icon="solar:calendar-bold"></iconify-icon>
-          </button>
-        </div>
-        <div class="todo-dialog__actions">
-          <button id="deleteTodoBtn" value="delete" class="todo-dialog__delete-btn">Delete</button>
-          <button id="saveTodoBtn" value="save" class="todo-dialog__save-btn">Save</button>
-        </div>
-      </form>
-    </dialog>
-  `;
+  appContainer.innerHTML = ListPage;
 
   // SETTINGS MENU
 
@@ -209,41 +133,8 @@ async function renderListPage() {
   const todoInput = document.getElementById("todoInput") as HTMLInputElement;
   const dueByInput = document.getElementById("dueByInput") as HTMLInputElement;
 
-  // Apply flatpickr to due-by input element
-  const fp = flatpickr(dueByInput, {
-    enableTime: true,
-    dateFormat: "Y-m-d H:i",
-    position: "auto",
-    positionElement: dueByBtn,
-    // Display a clear button in the calendar window
-    onReady: (_selectedDates, _dateStr, instance) => {
-      const clearButton = document.createElement("button");
-      clearButton.type = "button";
-      clearButton.className = "flatpickr-clear";
-      clearButton.textContent = "Clear";
-      clearButton.addEventListener("click", () => {
-        instance.clear();
-        instance.close();
-      });
-      instance.calendarContainer.appendChild(clearButton);
-    },
-    // Change color of the calendar icon depending on input value
-    onChange: (_selectedDates, dateStr, _instance) => {
-      if (dateStr) {
-        dueByBtn.classList.add("has-value");
-      } else {
-        dueByBtn.classList.remove("has-value");
-      }
-    }
-  });
-
-  // Open/close flatpickr calendar window
-  // TODO: not working properly
-  dueByBtn?.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (fp.isOpen) fp.close();
-    else fp.open();
-  });
+  // Apply flatpickr to due by input element
+  mountFlatpickr(dueByInput, dueByBtn);
 
   // New todo form submission
   todoForm.addEventListener("submit", async (e) => {
@@ -275,12 +166,29 @@ async function renderListPage() {
   const editDueByInputBtn = document.getElementById("editDueByInputBtn") as HTMLInputElement;
   const editTodoDialog = document.getElementById("editTodoDialog") as HTMLElement;
 
-  const fpEdit = flatpickr(editDueByInput, {
+  // Apply flatpickr to due by input element in editing modal
+  mountFlatpickr(editDueByInput, editDueByInputBtn, editTodoDialog);
+
+  // RENDER TODOS
+  // Fetch and render todos on page render
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const todos = await getTodos(user.id);
+    renderTodos(todos);
+  }
+}
+
+function mountFlatpickr(
+  input: HTMLElement,
+  button: HTMLElement,
+  container: HTMLElement = document.body
+) {
+  const fp = flatpickr(input, {
     enableTime: true,
     dateFormat: "Y-m-d H:i",
     position: "auto",
-    positionElement: editDueByInputBtn,
-    appendTo: editTodoDialog,
+    positionElement: button,
+    appendTo: container,
 
     // Display a clear button in the calendar window
     onReady: (_selectedDates, _dateStr, instance) => {
@@ -298,58 +206,27 @@ async function renderListPage() {
     // Change color of the calendar icon depending on input value
     onChange: (_selectedDates, dateStr, _instance) => {
       if (dateStr) {
-        editDueByInputBtn.classList.add("has-value");
+        button.classList.add("has-value");
       } else {
-        editDueByInputBtn.classList.remove("has-value");
+        button.classList.remove("has-value");
       }
     }
   });
 
-  editDueByInputBtn?.addEventListener("click", (e) => {
+  // Open/close flatpickr calendar window
+  button?.addEventListener("click", (e) => {
     e.preventDefault();
-    if (fpEdit.isOpen) fpEdit.close();
-    else fpEdit.open();
+    if (fp.isOpen) fp.close();
+    else fp.open();
   });
 
-  // RENDER TODOS
-  // Fetch and render todos on page render
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    const todos = await getTodos(user.id);
-    renderTodos(todos);
-  }
+  return fp;
 }
 
 // Render todos in the todos-container
 async function renderTodos(todos: Todo[] = []) {
   const todosContainer = document.querySelector(".todos-container") as HTMLElement;
-
-  const todoList = todos.map(({ id, todo, completed, due_by }: Todo) => {
-    // Format due-date to spec. formatting
-    const formattedDueBy = due_by ? new Date(due_by).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }) + ", " + new Date(due_by).toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }) : "";
-
-    return `
-      <div class="todo ${completed ? "completed" : ""}" data-todo-id="${id}">
-        <div class="todo__icon"><iconify-icon icon="solar:menu-dots-bold"></iconify-icon></div>
-        <div class="todo__info">
-          <div class="todo__title">${todo}</div>
-          ${formattedDueBy ? `<div class="todo__due-date pill">${formattedDueBy}</div>` : ''}
-        </div>
-        <label class="todo__checkbox">
-          <input type="checkbox" ${completed ? "checked" : ""}>
-          <span class="checkmark">
-            <iconify-icon icon="fa:check" class="check-icon"></iconify-icon>
-          </span>
-        </label>
-      </div>`;
-  }).join("");
+  const todoList = todos.map((todo: Todo) => TodoElement(todo)).join("");
 
   todosContainer.innerHTML = todoList;
 
