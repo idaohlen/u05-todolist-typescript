@@ -4,7 +4,7 @@ export async function registerUser(email: string, password: string) {
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) {
     if (error.message.includes("User already registered")) {
-      throw new Error("User already exists");
+      throw new Error("User already registered");
     }
     throw error;
   }

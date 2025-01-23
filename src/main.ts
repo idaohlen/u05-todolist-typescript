@@ -64,8 +64,8 @@ async function handleRegisterUser() {
     renderListPage();
   } catch (error) {
     console.error(error);
-    if (error instanceof Error && error.message.includes("User already exists")) {
-      errorMessage.textContent = "User already exists. Please try logging in.";
+    if (error instanceof Error && error.message.includes("User already registered")) {
+      errorMessage.textContent = "User with that email already exists. Please try logging in or use another email.";
     } else {
       errorMessage.textContent = "An error occurred. Please try again.";
     }
@@ -84,7 +84,6 @@ async function handleUserLogin() {
     await loginUser(email, password);
     renderListPage();
   } catch (error) {
-    console.error(error);
     errorMessage.textContent = "Incorrect email or password. Please try again.";
   }
 }
@@ -112,22 +111,71 @@ async function renderListPage() {
 
   appContainer.innerHTML = ListPage;
 
-  // SETTINGS MENU
+  setupSettingsMenu();
+  setupNewTodoForm();
+  setupEditTodoModal();
 
-  const settingsBtn = document.getElementById("settingsBtn") as HTMLInputElement;
-  const logoutBtn = document.getElementById("logoutBtn") as HTMLInputElement;
-  const editCategoriesBtn = document.getElementById("editCategoriesBtn") as HTMLInputElement;
-  const deleteAccountBtn = document.getElementById("deleteAccountBtn") as HTMLInputElement;
-  const deleteAllTodosBtn = document.getElementById("deleteAllTodosBtn") as HTMLInputElement;
+  // Fetch and render todos on page render
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const todos = await getTodos(user.id);
+    renderTodos(todos);
+  }
+}
 
-  settingsBtn?.addEventListener("click", toggleSettingsMenu);
-  editCategoriesBtn?.addEventListener("click", editCategories);
-  deleteAccountBtn?.addEventListener("click", deleteAccount);
-  logoutBtn?.addEventListener("click", HandleUserLogout);
-  deleteAllTodosBtn?.addEventListener("click", handleDeleteAllTodos);
+// Render todos in the todos-container
+async function renderTodos(todos: Todo[] = []) {
+  const todosContainer = document.querySelector(".todos-container") as HTMLElement;
+  const todoList = todos.map((todo: Todo) => TodoElement(todo)).join("");
 
-  // NEW TODO FORM
+  todosContainer.innerHTML = todoList;
 
+  // Event delegator for todos-container
+  todosContainer.addEventListener("click", async (e) => {
+    const target = e.target as HTMLElement;
+
+    // Handle checkbox change
+    if (target.matches(".todo__checkbox input[type='checkbox']")) {
+      const checkbox = target as HTMLInputElement;
+      handleupdateTodoCompletedStatus(checkbox);
+    }
+
+    if (target.closest(".todo") && !target.closest(".todo__checkbox")) {
+      handleEditTodo(target.closest(".todo") as HTMLElement);
+    }
+  });
+}
+
+// Handler for checking/unchecking a todo checkbox
+async function handleupdateTodoCompletedStatus(checkbox: HTMLInputElement) {
+  const todoElement = checkbox.closest(".todo") as HTMLElement;
+  if (!todoElement) return; // check that parent todo element exists
+
+  const todoId = todoElement.dataset.todoId;
+  if (!todoId) return; // check that data-todo-id attribute is defined
+
+  const completed = checkbox.checked;
+
+  try {
+    await updateTodoCompletedStatus(todoId, completed);
+    
+    if (completed) {
+      todoElement.classList.add("completed");
+    } else {
+      todoElement.classList.remove("completed");
+    }
+  } catch (error) {
+    console.error("Error updating todo status:", error);
+    checkbox.checked = !completed;
+  }
+}
+
+
+/* ---------------------------------------------- */
+// NEW TODO FORM
+/* ---------------------------------------------- */
+
+function setupNewTodoForm() {
   const todoForm = document.getElementById("newTodoForm") as HTMLFormElement;
   const dueByBtn = document.getElementById("dueByBtn") as HTMLFormElement;
   const todoInput = document.getElementById("todoInput") as HTMLInputElement;
@@ -159,91 +207,20 @@ async function renderListPage() {
       }
     }
   });
+}
 
-  // EDIT TODO
 
+/* ---------------------------------------------- */
+// EDIT TODO
+/* ---------------------------------------------- */
+
+function setupEditTodoModal() {
   const editDueByInput = document.getElementById("editDueByInput") as HTMLInputElement;
   const editDueByInputBtn = document.getElementById("editDueByInputBtn") as HTMLInputElement;
   const editTodoDialog = document.getElementById("editTodoDialog") as HTMLElement;
 
   // Apply flatpickr to due by input element in editing modal
   mountFlatpickr(editDueByInput, editDueByInputBtn, editTodoDialog);
-
-  // RENDER TODOS
-  // Fetch and render todos on page render
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    const todos = await getTodos(user.id);
-    renderTodos(todos);
-  }
-}
-
-function mountFlatpickr(
-  input: HTMLElement,
-  button: HTMLElement,
-  container: HTMLElement = document.body
-) {
-  const fp = flatpickr(input, {
-    enableTime: true,
-    dateFormat: "Y-m-d H:i",
-    position: "auto",
-    positionElement: button,
-    appendTo: container,
-
-    // Display a clear button in the calendar window
-    onReady: (_selectedDates, _dateStr, instance) => {
-      const clearButton = document.createElement("button");
-      clearButton.type = "button";
-      clearButton.className = "flatpickr-clear";
-      clearButton.textContent = "Clear";
-      clearButton.addEventListener("click", () => {
-        instance.clear();
-        instance.close();
-      });
-      instance.calendarContainer.appendChild(clearButton);
-      instance.calendarContainer.style.position = "fixed";
-    },
-    // Change color of the calendar icon depending on input value
-    onChange: (_selectedDates, dateStr, _instance) => {
-      if (dateStr) {
-        button.classList.add("has-value");
-      } else {
-        button.classList.remove("has-value");
-      }
-    }
-  });
-
-  // Open/close flatpickr calendar window
-  button?.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (fp.isOpen) fp.close();
-    else fp.open();
-  });
-
-  return fp;
-}
-
-// Render todos in the todos-container
-async function renderTodos(todos: Todo[] = []) {
-  const todosContainer = document.querySelector(".todos-container") as HTMLElement;
-  const todoList = todos.map((todo: Todo) => TodoElement(todo)).join("");
-
-  todosContainer.innerHTML = todoList;
-
-  // Event delegator for todos-container
-  todosContainer.addEventListener("click", async (e) => {
-    const target = e.target as HTMLElement;
-
-    // Handle checkbox change
-    if (target.matches(".todo__checkbox input[type='checkbox']")) {
-      const checkbox = target as HTMLInputElement;
-      handleupdateTodoCompletedStatus(checkbox);
-    }
-
-    if (target.closest(".todo") && !target.closest(".todo__checkbox")) {
-      handleEditTodo(target.closest(".todo") as HTMLElement);
-    }
-  });
 }
 
 async function handleEditTodo(todoElement: HTMLElement) {
@@ -314,28 +291,53 @@ async function handleEditTodo(todoElement: HTMLElement) {
   };
 }
 
-// Handler for checking/unchecking a todo checkbox
-async function handleupdateTodoCompletedStatus(checkbox: HTMLInputElement) {
-  const todoElement = checkbox.closest(".todo") as HTMLElement;
-  if (!todoElement) return; // check that parent todo element exists
+/* ---------------------------------------------- */
+// FLATPICKR
+/* ---------------------------------------------- */
 
-  const todoId = todoElement.dataset.todoId;
-  if (!todoId) return; // check that data-todo-id attribute is defined
+function mountFlatpickr(
+  input: HTMLElement,
+  button: HTMLElement,
+  container: HTMLElement = document.body
+) {
+  const fp = flatpickr(input, {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    position: "auto",
+    positionElement: button,
+    appendTo: container,
 
-  const completed = checkbox.checked;
-
-  try {
-    await updateTodoCompletedStatus(todoId, completed);
-    
-    if (completed) {
-      todoElement.classList.add("completed");
-    } else {
-      todoElement.classList.remove("completed");
+    // Display a clear button in the calendar window
+    onReady: (_selectedDates, _dateStr, instance) => {
+      const clearButton = document.createElement("button");
+      clearButton.type = "button";
+      clearButton.className = "flatpickr-clear";
+      clearButton.textContent = "Clear";
+      clearButton.addEventListener("click", () => {
+        instance.clear();
+        instance.close();
+      });
+      instance.calendarContainer.appendChild(clearButton);
+      instance.calendarContainer.style.position = "fixed";
+    },
+    // Change color of the calendar icon depending on input value
+    onChange: (_selectedDates, dateStr, _instance) => {
+      if (dateStr) {
+        button.classList.add("has-value");
+      } else {
+        button.classList.remove("has-value");
+      }
     }
-  } catch (error) {
-    console.error("Error updating todo status:", error);
-    checkbox.checked = !completed;
-  }
+  });
+
+  // Open/close flatpickr calendar window
+  button?.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (fp.isOpen) fp.close();
+    else fp.open();
+  });
+
+  return fp;
 }
 
 
@@ -346,6 +348,20 @@ async function handleupdateTodoCompletedStatus(checkbox: HTMLInputElement) {
 function toggleSettingsMenu() {
   const settingsMenu = document.getElementById("settingsMenu") as HTMLElement;
   settingsMenu.classList.toggle("show");
+}
+
+function setupSettingsMenu() {
+  const settingsBtn = document.getElementById("settingsBtn") as HTMLInputElement;
+  const logoutBtn = document.getElementById("logoutBtn") as HTMLInputElement;
+  const editCategoriesBtn = document.getElementById("editCategoriesBtn") as HTMLInputElement;
+  const deleteAccountBtn = document.getElementById("deleteAccountBtn") as HTMLInputElement;
+  const deleteAllTodosBtn = document.getElementById("deleteAllTodosBtn") as HTMLInputElement;
+
+  settingsBtn?.addEventListener("click", toggleSettingsMenu);
+  editCategoriesBtn?.addEventListener("click", editCategories);
+  deleteAccountBtn?.addEventListener("click", deleteAccount);
+  logoutBtn?.addEventListener("click", HandleUserLogout);
+  deleteAllTodosBtn?.addEventListener("click", handleDeleteAllTodos);
 }
 
 function editCategories() {
