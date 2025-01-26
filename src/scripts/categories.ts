@@ -1,4 +1,4 @@
-import { Category } from "../models/Category.ts";
+import Category from "../models/Category.ts";
 
 export const allCategories: Category[] = [
   { name: "Work", icon: "solar:case-round-minimalistic-bold", color: "blue" },

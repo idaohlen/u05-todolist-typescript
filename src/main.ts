@@ -32,7 +32,7 @@ import { allCategories } from "./scripts/categories.ts";
 
 // Models
 import Todo from "./models/Todo.ts";
-import Category from "./models/Category.ts";
+// import Category from "./models/Category.ts";
 
 // HTML elements
 const appContainer = document.querySelector("#app") as HTMLElement;
