@@ -13,7 +13,7 @@ export async function getTodos(userId: string) {
 export async function addTodo(
   todo: string,
   userId: string,
-  category: string = "",
+  category: string | null = null,
   dueBy: string | null = null
 ){
   const { error } = await supabase
@@ -21,7 +21,7 @@ export async function addTodo(
     .insert([{
       todo,
       user_id: userId,
-      category,
+      category: category,
       due_by: dueBy,
       completed: false
     }]);
@@ -38,10 +38,19 @@ export async function updateTodoCompletedStatus(todoId: string, completed: boole
   if (error) throw error;
 }
 
-export async function updateTodo(todoId: string, updatedTodo: string, updatedDueBy: string | null) {
+export async function updateTodo(
+  todoId: string,
+  updatedTodo: string,
+  updatedCategory: string | null,
+  updatedDueBy: string | null
+){
   const { error } = await supabase
     .from("todos")
-    .update({ todo: updatedTodo,  due_by: updatedDueBy })
+    .update({
+      todo: updatedTodo,
+      category: updatedCategory,
+      due_by: updatedDueBy
+    })
     .eq("id", todoId);
 
   if (error) throw error;

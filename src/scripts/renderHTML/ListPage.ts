@@ -25,7 +25,9 @@ const ListPage = `
 
   <div class="new-todo">
     <form id="newTodoForm" class="new-todo__form">
-      <iconify-icon icon="solar:menu-dots-bold" id="chooseCategoryBtn" class="new-todo__icon"></iconify-icon>
+      <button id="chooseCategoryBtn" class="new-todo__icon">
+        <iconify-icon icon="solar:menu-dots-bold"></iconify-icon>
+      </button>
       <input type="text" class="new-todo__input" id="todoInput" placeholder="Take the dog for a walk...">
       <input type="text" id="dueByInput" class="hidden-input">
       <button id="dueByBtn" class="new-todo__dueby-btn"><iconify-icon icon="solar:calendar-bold"></iconify-icon></button>
@@ -42,13 +44,7 @@ const ListPage = `
 
   <div class="todos-container"></div>
 
-  <div class="categories-container">
-      <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
-      <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
-      <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
-      <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
-      <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
-  </div>
+  <div class="categories-container"></div>
 
   <dialog id="editTodoDialog" class="todo-dialog">
   <button id="cancelBtn" value="cancel" class="todo-dialog__cancel-btn">
@@ -57,6 +53,9 @@ const ListPage = `
     <form method="dialog">
       <h2 class="todo-dialog__heading">Edit todo</h2>
       <div class="todo-dialog__form-inputs">
+        <button id="editTodoCategory" class="todo-dialog__edit-category-btn">
+          <iconify-icon icon="solar:menu-dots-bold"></iconify-icon>
+        </button>
         <input type="text" id="editTodoInput" class="todo-dialog__todo-input">
         <input type="text" id="editDueByInput" class="hidden-input">
         <button id="editDueByInputBtn" class="new-todo__dueby-btn edit-todo__dueby-btn">
@@ -69,6 +68,8 @@ const ListPage = `
       </div>
     </form>
   </dialog>
+
+  <div id="categoryPopup" class="category-popup"></div>
 `;
 
 export default ListPage;

@@ -8,6 +8,8 @@ import "iconify-icon";
 import { supabase } from "./scripts/supabaseClient.ts";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
+import tippy from "tippy.js";
+import "tippy.js/dist/tippy.css";
 
 // Pages / Components
 import LoginPage from "./scripts/renderHTML/LoginPage.ts";
@@ -25,16 +27,21 @@ import {
 } from "./scripts/todos.ts";
 
 import { registerUser, loginUser, logoutUser } from "./scripts/userAuth.ts";
+import { allCategories } from "./scripts/categories.ts";
 // import { formatDate } from "./scripts/utils.ts";
 
 // Models
 import Todo from "./models/Todo.ts";
+import Category from "./models/Category.ts";
 
 // HTML elements
 const appContainer = document.querySelector("#app") as HTMLElement;
 
-// Todo filters
+// Variables
 let allTodos: Todo[] = [];
+let activeEditRequestController: AbortController | null = null;
+
+// Todo filters
 let categoryFilters: string[] = [];
 let dueDateFilter: "today" | "this_week" | "this_month" | "all" = "all";
 
@@ -127,6 +134,7 @@ async function renderListPage() {
   if (user) {
     allTodos = await getTodos(user.id);
     renderTodos();
+    renderCategories();
   }
 }
 
@@ -193,6 +201,41 @@ async function renderTodos(todos: Todo[] = allTodos) {
   });
 }
 
+function renderCategories() {
+  const categoriesContainer = document.querySelector(".categories-container") as HTMLElement;
+
+  const html = allCategories.map(category => {
+    return `
+      <button class="category-btn" data-category-id="${category.name}">${category.name}</button>
+    `;
+    // return `
+    //   <button>
+    //     <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
+    //   </button>
+    // `;
+  }).join("");
+
+  categoriesContainer.innerHTML = html;
+
+  const buttons = Array.from(document.querySelectorAll(".category-btn")) as HTMLElement[];
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const category = btn.dataset.categoryId || "";
+
+      if (categoryFilters.includes(category)) {
+        categoryFilters = categoryFilters.filter(cat => cat !== category);
+        btn.classList.remove("active-filter");
+      } else {
+        categoryFilters.push(category);
+        btn.classList.add("active-filter");
+      }
+      
+      renderTodos();
+    });
+  });
+}
+
 // Handler for checking/unchecking a todo checkbox
 async function handleupdateTodoCompletedStatus(checkbox: HTMLInputElement) {
   const todoElement = checkbox.closest(".todo") as HTMLElement;
@@ -235,11 +278,6 @@ function setupDueByFilters() {
   });
 }
 
-function setCategoryFilters(categories: string[]) {
-  categoryFilters = categories;
-  renderTodos();
-}
-
 function setDueDateFilter(filter: "today" | "this_week" | "this_month" | "all") {
   dueDateFilter = filter;
   renderTodos();
@@ -254,6 +292,14 @@ function setupNewTodoForm() {
   const dueByBtn = document.getElementById("dueByBtn") as HTMLFormElement;
   const todoInput = document.getElementById("todoInput") as HTMLInputElement;
   const dueByInput = document.getElementById("dueByInput") as HTMLInputElement;
+  const chooseCategoryBtn = document.getElementById("chooseCategoryBtn") as HTMLElement;
+
+  let newCategory = "";
+
+  setupCategoryPopup(chooseCategoryBtn, (category) => {
+    newCategory = category;
+    console.log("Selected category for new todo:", newCategory);
+  });
 
   // Apply flatpickr to due by input element
   mountFlatpickr(dueByInput, dueByBtn);
@@ -268,8 +314,7 @@ function setupNewTodoForm() {
       try {
         if (!todoInput.value.trim()) throw new Error("Todo cannot be empty.");
 
-        await addTodo(todoInput.value, user.id, "", dueBy);
-        const todos = await getTodos(user.id);
+        await addTodo(todoInput.value, user.id, newCategory, dueBy);
 
         todoInput.value = "";
         dueByInput.value = "";
@@ -298,10 +343,20 @@ function setupEditTodoModal() {
 }
 
 async function handleEditTodo(todoElement: HTMLElement) {
+  // Abort the previous request if it exists
+  if (activeEditRequestController) {
+    activeEditRequestController.abort();
+  }
+
+  // Create a new AbortController for the current request
+  activeEditRequestController = new AbortController();
+  // const { signal } = activeEditRequestController;
+
   const editTodoDialog = document.getElementById("editTodoDialog") as HTMLDialogElement;
   const editTodoInput = document.getElementById("editTodoInput") as HTMLInputElement;
   const editDueByInput = document.getElementById("editDueByInput") as HTMLInputElement;
   const editDueByInputBtn = document.getElementById("editDueByInputBtn") as HTMLInputElement;
+  const editCategoryBtn = document.getElementById("editTodoCategory") as HTMLButtonElement;
   const saveTodoBtn = document.getElementById("saveTodoBtn") as HTMLButtonElement;
   const deleteTodoBtn = document.getElementById("deleteTodoBtn") as HTMLButtonElement;
   const cancelBtn = document.getElementById("cancelBtn") as HTMLButtonElement;
@@ -323,13 +378,21 @@ async function handleEditTodo(todoElement: HTMLElement) {
   if (todo.due_by) editDueByInputBtn.classList.add("has-value");
   else editDueByInputBtn.classList.remove("has-value");
 
+  let updatedCategory = todo.category;
+
   editTodoDialog.showModal();
 
   // Close dialog when clicking on the backdrop
   editTodoDialog.addEventListener("click", (e) => {
     if (e.target === editTodoDialog) {
       editTodoDialog.close();
+      activeEditRequestController = null;
     }
+  });
+
+  setupCategoryPopup(editCategoryBtn, (category) => {
+    updatedCategory = category;
+    console.log("Selected category for edit todo:", updatedCategory);
   });
 
   // Save todo edits
@@ -338,12 +401,14 @@ async function handleEditTodo(todoElement: HTMLElement) {
     const updatedDueBy = editDueByInput.value ? new Date(editDueByInput.value).toISOString() : null;
 
     try {
-      await updateTodo(todoId, updatedTodo, updatedDueBy);
+      await updateTodo(todoId, updatedTodo, updatedCategory, updatedDueBy);
       allTodos = await getTodos(user.id);
       renderTodos();
       editTodoDialog.close();
     } catch (error) {
       console.error("Error updating todo:", error);
+    } finally {
+      activeEditRequestController = null;
     }
   };
 
@@ -356,14 +421,64 @@ async function handleEditTodo(todoElement: HTMLElement) {
       editTodoDialog.close();
     } catch (error) {
       console.error("Error deleting todo:", error);
+    } finally {
+      activeEditRequestController = null;
     }
   };
 
   // Cancel todo edit/close modal
   cancelBtn.onclick = () => {
     editTodoDialog.close();
+    activeEditRequestController = null;
   };
 }
+
+
+/* ---------------------------------------------- */
+// CHOOSE CATEGORY
+/* ---------------------------------------------- */
+
+function setupCategoryPopup(button: HTMLElement, onSelectCategory: (category: string) => void) {
+  const popupContent = document.createElement("div");
+  popupContent.innerHTML = `
+    ${allCategories.map(category => `
+      <button class="choose-category-btn" data-category-name="${category.name}">
+        <iconify-icon icon="${category.icon}" class="category-icon"></iconify-icon>
+        ${category.name}
+      </button>
+    `).join("")}
+  `;
+
+  const buttons = popupContent.querySelectorAll(".choose-category-btn");
+
+  buttons.forEach((btn) => btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    const target = e.target as HTMLElement;
+    const category = target.dataset.categoryName;
+    if (target && category) {
+      onSelectCategory(category);
+      instance.hide();
+    }
+  }));
+
+  const instance = tippy(button, {
+    content: popupContent,
+    allowHTML: true,
+    interactive: true,
+    trigger: "click",
+    placement: "bottom",
+    onShow(instance) {
+      instance.setContent(popupContent);
+    }
+  });
+
+  // Prevent event propagation to keep the modal open
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
+}
+
 
 /* ---------------------------------------------- */
 // FLATPICKR

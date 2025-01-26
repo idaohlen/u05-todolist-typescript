@@ -1,12 +1,19 @@
 import Todo from "../../models/Todo.ts";
+import { allCategories } from "../categories.ts";
 import { formatDate } from "../utils.ts";
 
-export default function TodoElement({ id, todo, completed, due_by }: Todo) {
+export default function TodoElement({ id, todo, category, completed, due_by }: Todo) {
   // Format due date to spec. date formatting
   const formattedDueBy = due_by ? formatDate(due_by) : "";
+
+  // Find icon for the category
+  const categoryIcon = category
+    ? allCategories.find(cat => cat.name === category)?.icon || "solar:menu-dots-bold"
+    : "solar:menu-dots-bold";
+
   return `
     <div class="todo ${completed ? "completed" : ""}" data-todo-id="${id}">
-      <div class="todo__icon"><iconify-icon icon="solar:menu-dots-bold"></iconify-icon></div>
+      <div class="todo__icon"><iconify-icon icon="${categoryIcon}"></iconify-icon></div>
       <div class="todo__info">
         <div class="todo__title">${todo}</div>
         ${formattedDueBy ? `<div class="todo__due-date pill">${formattedDueBy}</div>` : ''}
