@@ -43,7 +43,7 @@ let activeEditRequestController: AbortController | null = null;
 
 // Todo filters
 let categoryFilters: string[] = [];
-let dueDateFilter: "today" | "this_week" | "this_month" | "all" = "all";
+let dueDateFilter: "today" | "this_week" | "this_month" | "overdue" | "all" = "all";
 
 
 /* ---------------------------------------------- */
@@ -169,6 +169,8 @@ async function renderTodos(todos: Todo[] = allTodos) {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
       return dueDate >= startOfMonth && dueDate <= endOfMonth;
+    } else if (dueDateFilter === "overdue") {
+      return dueDate < now;
     }
     return false;
   });
@@ -272,13 +274,13 @@ function setupDueByFilters() {
       dueByFilters.forEach(btn => btn.classList.remove("active-filter"));
       button.classList.add("active-filter");
 
-      const filter = button.textContent?.toLowerCase().replace(" ", "_") as "today" | "this_week" | "this_month" | "all";
+      const filter = button.textContent?.toLowerCase().replace(" ", "_") as "today" | "this_week" | "this_month" | "overdue" | "all";
       setDueDateFilter(filter);
     });
   });
 }
 
-function setDueDateFilter(filter: "today" | "this_week" | "this_month" | "all") {
+function setDueDateFilter(filter: "today" | "this_week" | "this_month" | "overdue" | "all") {
   dueDateFilter = filter;
   renderTodos();
 }

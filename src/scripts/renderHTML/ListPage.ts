@@ -36,10 +36,11 @@ const ListPage = `
   </div>
 
   <div class="dueby-filters">
-    <button class="btn filter-btn sactive-filter">All</button>
+    <button class="btn filter-btn active-filter">All</button>
     <button class="btn filter-btn">Today</button>
     <button class="btn filter-btn">This week</button>
     <button class="btn filter-btn">This month</button>
+    <button class="btn filter-btn">Overdue</button>
   </div>
 
   <div class="todos-container"></div>
