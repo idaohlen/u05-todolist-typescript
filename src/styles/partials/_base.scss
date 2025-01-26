@@ -32,6 +32,19 @@ input {
   font-size: inherit;
 }
 
+button {
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  margin: 0;
+  padding: 0;
+  border: none;
+  
+  &:hover {
+    cursor: pointer;
+  }
+}
+
 iconify-icon {
   display: inline-block;
   width: 1em;

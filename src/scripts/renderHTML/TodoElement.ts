@@ -11,12 +11,20 @@ export default function TodoElement({ id, todo, category, completed, due_by }: T
     ? allCategories.find(cat => cat.name === category)?.icon || "solar:menu-dots-bold"
     : "solar:menu-dots-bold";
 
+  // Find color for the category
+  const categoryColor = category
+    ? allCategories.find(cat => cat.name === category)?.color || "red"
+    : "red";
+
+  // Check if the todo is overdue
+  const isOverdue = due_by ? new Date(due_by) < new Date() : false;
+
   return `
-    <div class="todo ${completed ? "completed" : ""}" data-todo-id="${id}">
-      <div class="todo__icon"><iconify-icon icon="${categoryIcon}"></iconify-icon></div>
+    <div class="todo ${completed ? "completed" : ""} ${isOverdue ? "overdue" : ""} bg-${categoryColor}" data-todo-id="${id}">
+      <div class="todo__icon text-${categoryColor}"><iconify-icon icon="${categoryIcon}"></iconify-icon></div>
       <div class="todo__info">
         <div class="todo__title">${todo}</div>
-        ${formattedDueBy ? `<div class="todo__due-date pill">${formattedDueBy}</div>` : ''}
+        ${formattedDueBy ? `<div class="todo__due-date chip">${formattedDueBy}</div>` : ''}
       </div>
       <label class="todo__checkbox">
         <input type="checkbox" ${completed ? "checked" : ""}>

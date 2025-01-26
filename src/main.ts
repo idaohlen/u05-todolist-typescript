@@ -204,24 +204,36 @@ async function renderTodos(todos: Todo[] = allTodos) {
 }
 
 function renderCategories() {
-  const categoriesContainer = document.querySelector(".categories-container") as HTMLElement;
+  const categoriesContainer = document.querySelector(".category-filters") as HTMLElement;
 
-  const html = allCategories.map(category => {
-    return `
-      <button class="category-btn" data-category-id="${category.name}">${category.name}</button>
-    `;
-    // return `
-    //   <button>
-    //     <iconify-icon icon="solar:home-bold" class="category-icon"></iconify-icon>
-    //   </button>
-    // `;
-  }).join("");
+  const getCategoryColor = (category: string) => category
+    ? allCategories.find(cat => cat.name === category)?.color || "red"
+    : "red";
+
+  const html = `
+    ${ allCategories.map(category => {
+      return `
+        <button class="choose-category-btn" data-category-id="${category.name}" data-tooltip="${category.name}">
+          <iconify-icon icon="${category.icon}" class="category-icon text-${getCategoryColor(category.name)}"></iconify-icon>
+        </button>
+      `
+    }).join("") }
+    <button class="choose-category-btn" data-category-id="none" data-tooltip="No category">
+      <iconify-icon icon="solar:menu-dots-bold" class="category-icon"></iconify-icon>
+    </button>
+  `;
 
   categoriesContainer.innerHTML = html;
 
-  const buttons = Array.from(document.querySelectorAll(".category-btn")) as HTMLElement[];
+  const buttons = Array.from(document.querySelectorAll(".choose-category-btn")) as HTMLElement[];
 
   buttons.forEach(btn => {
+    tippy(btn, {
+      content: btn.dataset.tooltip,
+      placement: "top",
+      arrow: true,
+    });
+
     btn.addEventListener("click", () => {
       const category = btn.dataset.categoryId || "";
 

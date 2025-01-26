@@ -1,29 +1,23 @@
+@use "sass:color";
 @use "../partials/variables" as *;
 
-button, .btn {
-  $color: white;
-  $bg: linear-gradient(to right, $primary-color, $secondary-color);
-  color: $color;
+.btn {
   padding: .7rem 1.7rem;
   font-family: inherit;
   font-size: inherit;
-  background: $bg;
-  border: 1px solid transparent;
-  border-radius: 200px;
-
+  color: white;
+  background: $primary-color;
+  border: 2px solid transparent;
+  outline: 1.5px solid transparent;
+  border-radius: 4px;
+  transition: all .4s;
 
   &:hover {
     cursor: pointer;
-  }
-}
-
-.btn {
-  outline: 1px solid transparent;
-  outline-offset: 2px;
-  transition: all .4s;
-  
-  &:hover {
-    outline-color: $color-red;
+    border-color: $primary-color;
+    outline-color: $primary-color;
+    transform: translateY(-4px);
+    box-shadow: 0px 10px 20px color.adjust($primary-color, $lightness: 15%);
   }
 }
 
@@ -31,4 +25,43 @@ button, .btn {
   background: transparent;
   color: $primary-color;
   border-color: $primary-color;
+  outline-offset: 0px;
+
+  &:hover {
+    color: color.adjust(
+      $primary-color,
+      $lightness: -10%,
+      $saturation: -10%
+    );
+    outline-color: transparent;
+  }
+}
+
+.btn--rounded {
+  border-radius: 200px;
+  padding: 1rem .8rem;
+}
+
+.btn--pastel {
+  background: #FFD8D8;
+  color: black;
+
+  &.active-filter {
+    background: transparent;
+    border-color: $primary-color;
+    outline-color: $primary-color;
+  }
+}
+
+.btn--gradient {
+  background: linear-gradient(to right, $primary-color, $secondary-color);
+}
+
+.btn--gray {
+  background: gray;
+
+  &:hover {
+    border-color: gray;
+    outline-color: gray;
+  }
 }

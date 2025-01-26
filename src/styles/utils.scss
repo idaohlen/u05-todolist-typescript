@@ -1,3 +1,20 @@
-.show {
-  display: block;
-}
+@use "./partials/variables" as *;
+
+
+.show { display: block }
+
+.text-light { color: white }
+.text-dark { color: black }
+.text-pink { color: $color-red }
+.text-green { color: $color-green }
+.text-blue { color: $color-blue }
+.text-purple { color: $color-purple }
+.text-orange { color: $color-orange }
+.text-cyan { color: $color-cyan }
+
+.bg-pink { background: $color-red }
+.bg-green { background: $color-green }
+.bg-blue { background: $color-blue }
+.bg-purple { background: $color-purple }
+.bg-orange { background: $color-orange }
+.bg-cyan { background: $color-cyan }

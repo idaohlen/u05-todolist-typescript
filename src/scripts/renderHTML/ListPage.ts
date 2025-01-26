@@ -36,16 +36,16 @@ const ListPage = `
   </div>
 
   <div class="dueby-filters">
-    <button class="btn filter-btn active-filter">All</button>
-    <button class="btn filter-btn">Today</button>
-    <button class="btn filter-btn">This week</button>
-    <button class="btn filter-btn">This month</button>
-    <button class="btn filter-btn">Overdue</button>
+    <button class="btn btn--rounded btn--pastel filter-btn active-filter">All</button>
+    <button class="btn btn--rounded btn--pastel filter-btn">Today</button>
+    <button class="btn btn--rounded btn--pastel filter-btn">This week</button>
+    <button class="btn btn--rounded btn--pastel filter-btn">This month</button>
+    <button class="btn btn--rounded btn--pastel filter-btn">Overdue</button>
   </div>
 
   <div class="todos-container"></div>
 
-  <div class="categories-container"></div>
+  <div class="category-filters"></div>
 
   <dialog id="editTodoDialog" class="todo-dialog">
   <button id="cancelBtn" value="cancel" class="todo-dialog__cancel-btn">
@@ -64,8 +64,8 @@ const ListPage = `
         </button>
       </div>
       <div class="todo-dialog__actions">
-        <button id="deleteTodoBtn" value="delete" class="todo-dialog__delete-btn">Delete</button>
-        <button id="saveTodoBtn" value="save" class="todo-dialog__save-btn">Save</button>
+        <button id="deleteTodoBtn" value="delete" class="btn btn--gray">Delete</button>
+        <button id="saveTodoBtn" value="save" class="btn">Save</button>
       </div>
     </form>
   </dialog>

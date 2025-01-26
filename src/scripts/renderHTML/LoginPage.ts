@@ -15,7 +15,7 @@ const LoginPage = `
       <div id="errorMessage" class="error-message"></div>
       <div class="login-form__buttons">
         <button id="registerUserBtn" class="btn btn--outline">Register</button>
-        <button id="loginBtn" class="btn">Login</button>
+        <button id="loginBtn" class="btn btn--gradient">Login</button>
       </div>
     </div>
   `

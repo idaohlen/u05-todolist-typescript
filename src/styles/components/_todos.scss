@@ -7,7 +7,7 @@
   display: flex;
   flex-direction: column;
   overflow: auto;
-  gap: .5rem;
+  gap: .8rem;
 }
 
 .todo {
@@ -20,10 +20,18 @@
   background: $color;
   color: white;
   border-radius: 100vw;
-  outline: 1px solid transparent;
+  outline: 1.5px solid transparent;
   outline-offset: 2px;
   cursor: pointer;
   transition: all .4s;
+
+  // &.overdue {
+  //   $color: red;
+  //   outline-color: $color;
+  //   outline-offset: -2px;
+  //   background: transparent;
+  //   color: $color;
+  // }
 
   &.completed {
     opacity: .5;
@@ -31,6 +39,7 @@
 
   &:hover {
     outline-color: $color-red;
+    margin-left: 2rem;
   }
 
   &__icon {
