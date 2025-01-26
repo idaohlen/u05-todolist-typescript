@@ -28,11 +28,9 @@ import {
 
 import { registerUser, loginUser, logoutUser } from "./scripts/userAuth.ts";
 import { allCategories } from "./scripts/categories.ts";
-// import { formatDate } from "./scripts/utils.ts";
 
 // Models
 import Todo from "./models/Todo.ts";
-// import Category from "./models/Category.ts";
 
 // HTML elements
 const appContainer = document.querySelector("#app") as HTMLElement;
@@ -557,17 +555,11 @@ function toggleSettingsMenu() {
 function setupSettingsMenu() {
   const settingsBtn = document.getElementById("settingsBtn") as HTMLInputElement;
   const logoutBtn = document.getElementById("logoutBtn") as HTMLInputElement;
-  const editCategoriesBtn = document.getElementById("editCategoriesBtn") as HTMLInputElement;
   const deleteAllTodosBtn = document.getElementById("deleteAllTodosBtn") as HTMLInputElement;
 
   settingsBtn?.addEventListener("click", toggleSettingsMenu);
-  editCategoriesBtn?.addEventListener("click", editCategories);
   logoutBtn?.addEventListener("click", HandleUserLogout);
   deleteAllTodosBtn?.addEventListener("click", handleDeleteAllTodos);
-}
-
-function editCategories() {
-  console.log("Edit Categories clicked");
 }
 
 async function handleDeleteAllTodos() {

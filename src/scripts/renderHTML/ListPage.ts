@@ -7,9 +7,6 @@ const ListPage = `
         <iconify-icon icon="solar:settings-outline"></iconify-icon>
       </button>
       <div id="settingsMenu" class="settings-menu">
-        <button id="editCategoriesBtn" class="settings-menu__item">
-          <iconify-icon icon="solar:server-minimalistic-bold"></iconify-icon>
-          Edit categories
         </button>
         <button id="deleteAllTodosBtn" class="settings-menu__item">
           <iconify-icon icon="solar:trash-bin-trash-bold"></iconify-icon>
