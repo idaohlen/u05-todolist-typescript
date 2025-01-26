@@ -25,13 +25,11 @@
   cursor: pointer;
   transition: all .4s;
 
-  // &.overdue {
-  //   $color: red;
-  //   outline-color: $color;
-  //   outline-offset: -2px;
-  //   background: transparent;
-  //   color: $color;
-  // }
+  &.overdue &__due-date {
+    color: white;
+    background: $primary-color;
+    outline: 1px solid white;
+  }
 
   &.completed {
     opacity: .5;
@@ -136,28 +134,6 @@
     }
   }
 
-  &__icon {
-    $size: 4rem;
-    padding: .5rem;
-    margin-left: .6rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: $size;
-    height: $size;
-    font-size: 3rem;
-    color: white;
-    background: $primary-color;
-    border-radius: 50%;
-    transition: all .4s;
-
-    &:hover {
-      color: $primary-color;
-      background: white;
-      cursor: pointer;
-    }
-  }
-
   &__input {
     height: 100%;
     width: 100%;
@@ -201,4 +177,18 @@
     color: $primary-color;
     }
   }
+}
+
+#chooseCategoryBtn {
+  padding: .5rem;
+}
+
+#newCategoryIcon {
+  font-size: 2rem;
+  $size: 4rem;
+  width: $size;
+  height: $size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

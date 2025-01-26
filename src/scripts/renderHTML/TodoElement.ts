@@ -1,20 +1,15 @@
 import Todo from "../../models/Todo.ts";
-import { allCategories } from "../categories.ts";
-import { formatDate } from "../utils.ts";
+import { formatDate, getCategoryColor, getCategoryIcon } from "../utils.ts";
 
 export default function TodoElement({ id, todo, category, completed, due_by }: Todo) {
   // Format due date to spec. date formatting
   const formattedDueBy = due_by ? formatDate(due_by) : "";
 
   // Find icon for the category
-  const categoryIcon = category
-    ? allCategories.find(cat => cat.name === category)?.icon || "solar:menu-dots-bold"
-    : "solar:menu-dots-bold";
+  const categoryIcon = getCategoryIcon(category);
 
   // Find color for the category
-  const categoryColor = category
-    ? allCategories.find(cat => cat.name === category)?.color || "red"
-    : "red";
+  const categoryColor = getCategoryColor(category);
 
   // Check if the todo is overdue
   const isOverdue = due_by ? new Date(due_by) < new Date() : false;

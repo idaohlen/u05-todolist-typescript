@@ -4,51 +4,61 @@
   position: relative;
 
   .settings-btn {
+    width: 4rem;
+    height: 4rem;
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 3rem;
     padding: 0;
     background: none;
     color: $primary-color;
     cursor: pointer;
+    transform-origin: center;
+    transition: transform 2s;
+
+    &:hover {
+      transform: rotate(360deg);
+    }
   }
 }
 
-.settings-container {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  display: inline-block;
-}
-
-.settings-menu {
-  display: none;
-  position: absolute;
-  right: 0;
-  z-index: 1;
-  width: 15rem;
-  background-color: white;
-  outline: 1px solid gray;
-  border-radius: 4px;
-  overflow: hidden;
+.menu-popup {
+  display: flex;
+  flex-direction: column;
+  margin: .5rem 0;
 
   &__item {
-    padding: .8rem 1rem;
-    color: black;
-    text-align: left;
-    border-radius: 0;
-    border: none;
-    background: none;
-    width: 100%;
-    cursor: pointer;
+    padding: .5rem 1.5rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1rem;
+    border-radius: 4px;
+    transition: all .4s;
 
     &:hover {
-      background-color: #f1f1f1;
+      background: $color-red-pastel;
     }
+  }
+
+  &__item-icon {
+    font-size: 2rem;
   }
 }
 
 .hidden-input {
   position: absolute;
   left: -9999px;
+}
+
+.flatpickr-calendar {
+  width: 100%;
+  max-width: 320px;
+  z-index: 9999;
 }
 
 .flatpickr-clear {

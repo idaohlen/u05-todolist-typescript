@@ -42,8 +42,32 @@
   padding: 1rem .8rem;
 }
 
+.btn--round {
+    $size: 4rem;
+    padding: .5rem;
+    margin-left: .6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: $size;
+    height: $size;
+    font-size: 3rem;
+    color: white;
+    background: $primary-color;
+    border-radius: 50%;
+    transition: all .4s;
+
+    &:hover {
+      color: $primary-color;
+      transform: translateY(0px);
+      box-shadow: none;
+      background: white;
+      cursor: pointer;
+    }
+}
+
 .btn--pastel {
-  background: #FFD8D8;
+  background: $color-red-pastel;
   color: black;
 
   &.active-filter {

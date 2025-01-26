@@ -10,6 +10,7 @@ import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import tippy from "tippy.js";
 import "tippy.js/dist/tippy.css";
+import "tippy.js/themes/light-border.css";
 
 // Pages / Components
 import LoginPage from "./scripts/renderHTML/LoginPage.ts";
@@ -28,6 +29,7 @@ import {
 
 import { registerUser, loginUser, logoutUser } from "./scripts/userAuth.ts";
 import { allCategories } from "./scripts/categories.ts";
+import { getCategoryColor, getCategoryIcon } from "./scripts/utils.ts";
 
 // Models
 import Todo from "./models/Todo.ts";
@@ -100,7 +102,7 @@ async function handleUserLogin() {
 }
 
 // Log out user
-async function HandleUserLogout() {
+async function handleUserLogout() {
   console.log("logging out...");
   try {
     await logoutUser();
@@ -204,10 +206,6 @@ async function renderTodos(todos: Todo[] = allTodos) {
 function renderCategories() {
   const categoriesContainer = document.querySelector(".category-filters") as HTMLElement;
 
-  const getCategoryColor = (category: string) => category
-    ? allCategories.find(cat => cat.name === category)?.color || "red"
-    : "red";
-
   const html = `
     ${ allCategories.map(category => {
       return `
@@ -230,6 +228,7 @@ function renderCategories() {
       content: btn.dataset.tooltip,
       placement: "top",
       arrow: true,
+      theme: "light-border"
     });
 
     btn.addEventListener("click", () => {
@@ -305,6 +304,7 @@ function setupNewTodoForm() {
   const todoInput = document.getElementById("todoInput") as HTMLInputElement;
   const dueByInput = document.getElementById("dueByInput") as HTMLInputElement;
   const chooseCategoryBtn = document.getElementById("chooseCategoryBtn") as HTMLElement;
+  const addTodoBtn = document.getElementById("addTodoBtn") as HTMLElement;
 
   let newCategory = "";
 
@@ -315,6 +315,10 @@ function setupNewTodoForm() {
 
   // Apply flatpickr to due by input element
   mountFlatpickr(dueByInput, dueByBtn);
+
+  tippy(chooseCategoryBtn, { content: "Choose category", placement: "top", arrow: true, theme: "light-border" });
+  tippy(dueByBtn, { content: "Set a due date", placement: "top", arrow: true, theme: "light-border" });
+  tippy(addTodoBtn, { content: "Add new todo", placement: "top", arrow: true, theme: "light-border" });
 
   // New todo form submission
   todoForm.addEventListener("submit", async (e) => {
@@ -408,6 +412,22 @@ async function handleEditTodo(todoElement: HTMLElement) {
     console.log("Selected category for edit todo:", updatedCategory);
   });
 
+  tippy(editCategoryBtn, {
+    content: "Edit category",
+    placement: "top",
+    arrow: true,
+    theme: "light-border",
+    appendTo: editTodoDialog
+  });
+
+  tippy(editDueByInputBtn, {
+    content: "Edit due date",
+    placement: "top",
+    arrow: true,
+    theme: "light-border",
+    appendTo: editTodoDialog
+  });
+
   // Save todo edits
   saveTodoBtn.onclick = async () => {
     const updatedTodo = editTodoInput.value.trim();
@@ -453,10 +473,11 @@ async function handleEditTodo(todoElement: HTMLElement) {
 
 function setupCategoryPopup(button: HTMLElement, onSelectCategory: (category: string) => void) {
   const popupContent = document.createElement("div");
+  popupContent.classList.add("menu-popup");
   popupContent.innerHTML = `
     ${allCategories.map(category => `
-      <button class="choose-category-btn" data-category-name="${category.name}">
-        <iconify-icon icon="${category.icon}" class="category-icon"></iconify-icon>
+      <button class="choose-category-btn menu-popup__item" data-category-name="${category.name}">
+        <iconify-icon icon="${category.icon}" class="menu-popup__item-icon"></iconify-icon>
         ${category.name}
       </button>
     `).join("")}
@@ -470,6 +491,10 @@ function setupCategoryPopup(button: HTMLElement, onSelectCategory: (category: st
     const category = target.dataset.categoryName;
     if (target && category) {
       onSelectCategory(category);
+      const icon = document.getElementById("newCategoryIcon");
+      const categoryIcon = getCategoryIcon(category);
+      icon?.setAttribute("icon", categoryIcon);
+
       instance.hide();
     }
   }));
@@ -480,6 +505,7 @@ function setupCategoryPopup(button: HTMLElement, onSelectCategory: (category: st
     interactive: true,
     trigger: "click",
     placement: "bottom",
+    theme: "light-border",
     onShow(instance) {
       instance.setContent(popupContent);
     }
@@ -535,8 +561,7 @@ function mountFlatpickr(
   // Open/close flatpickr calendar window
   button?.addEventListener("click", (e) => {
     e.preventDefault();
-    if (fp.isOpen) fp.close();
-    else fp.open();
+    fp.toggle();
   });
 
   return fp;
@@ -547,19 +572,39 @@ function mountFlatpickr(
 // SETTINGS MENU
 /* ---------------------------------------------- */
 
-function toggleSettingsMenu() {
-  const settingsMenu = document.getElementById("settingsMenu") as HTMLElement;
-  settingsMenu.classList.toggle("show");
-}
-
 function setupSettingsMenu() {
   const settingsBtn = document.getElementById("settingsBtn") as HTMLInputElement;
-  const logoutBtn = document.getElementById("logoutBtn") as HTMLInputElement;
-  const deleteAllTodosBtn = document.getElementById("deleteAllTodosBtn") as HTMLInputElement;
 
-  settingsBtn?.addEventListener("click", toggleSettingsMenu);
-  logoutBtn?.addEventListener("click", HandleUserLogout);
-  deleteAllTodosBtn?.addEventListener("click", handleDeleteAllTodos);
+  const popupContent = document.createElement("div");
+  popupContent.classList.add("menu-popup");
+  popupContent.innerHTML = `
+      <button id="deleteAllTodosBtn" class="menu-popup__item">
+        <iconify-icon icon="solar:trash-bin-trash-bold" class="menu-popup__item-icon"></iconify-icon>
+        Delete all todos
+      </button>
+      <button id="logoutBtn" class="menu-popup__item">
+        <iconify-icon icon="solar:logout-2-bold" class="menu-popup__item-icon"></iconify-icon>
+        Logout
+      </button>
+  `;
+
+  tippy(settingsBtn, {
+    content: popupContent,
+    allowHTML: true,
+    interactive: true,
+    trigger: "click",
+    placement: "bottom",
+    theme: "light-border",
+    onMount() {
+      const deleteAllTodosBtn = document.getElementById("deleteAllTodosBtn") as HTMLElement;
+      const logoutBtn = document.getElementById("logoutBtn") as HTMLElement;
+
+      console.log(logoutBtn);
+    
+      deleteAllTodosBtn?.addEventListener("click", handleDeleteAllTodos);
+      logoutBtn?.addEventListener("click", handleUserLogout);
+    }
+  });
 }
 
 async function handleDeleteAllTodos() {
@@ -569,7 +614,6 @@ async function handleDeleteAllTodos() {
   try {
     await deleteAllTodos(user.id);
     renderTodos([]);
-    toggleSettingsMenu();
 
   } catch (error) {
     console.error("Error deleting all todos:", error);
