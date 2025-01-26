@@ -315,11 +315,12 @@ function setupNewTodoForm() {
         if (!todoInput.value.trim()) throw new Error("Todo cannot be empty.");
 
         await addTodo(todoInput.value, user.id, newCategory, dueBy);
-
+        
         todoInput.value = "";
         dueByInput.value = "";
         dueByBtn.classList.remove("has-value");
-
+        
+        allTodos = await getTodos(user.id);
         renderTodos();
       } catch (e) {
         console.log(e);
