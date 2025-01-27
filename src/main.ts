@@ -29,7 +29,7 @@ import {
 
 import { registerUser, loginUser, logoutUser } from "./scripts/userAuth.ts";
 import { allCategories } from "./scripts/categories.ts";
-import { getCategoryColor, getCategoryIcon } from "./scripts/utils.ts";
+import { getCategoryColor, getCategoryIcon, getRandomTodoSuggestion } from "./scripts/utils.ts";
 
 // Models
 import Todo from "./models/Todo.ts";
@@ -309,6 +309,9 @@ function setupNewTodoForm() {
   const chooseCategoryBtn = document.getElementById("chooseCategoryBtn") as HTMLElement;
   const addTodoBtn = document.getElementById("addTodoBtn") as HTMLElement;
 
+  // Set random placeholder text for the todo-input
+  todoInput.placeholder = getRandomTodoSuggestion();
+
   let newCategory = "";
 
   setupCategoryPopup(chooseCategoryBtn, (category) => {
@@ -335,6 +338,7 @@ function setupNewTodoForm() {
         await addTodo(todoInput.value, user.id, newCategory, dueBy);
         
         todoInput.value = "";
+        todoInput.placeholder = getRandomTodoSuggestion();
         dueByInput.value = "";
         dueByBtn.classList.remove("has-value");
         

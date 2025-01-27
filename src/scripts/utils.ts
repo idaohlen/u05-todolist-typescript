@@ -1,4 +1,5 @@
 import { allCategories } from "./categories.ts";
+import todoSuggestions from "../data/random-todos.json";
 
 export function formatDate(date: string) {
   return new Date(date).toLocaleDateString("en-GB", {
@@ -20,4 +21,9 @@ export function getCategoryIcon(category: string) {
   return category
   ? allCategories.find(cat => cat.name === category)?.icon || "solar:menu-dots-bold"
   : "solar:menu-dots-bold";
+}
+
+export function getRandomTodoSuggestion(): string {
+  const randomIndex = Math.floor(Math.random() * todoSuggestions.length);
+  return todoSuggestions[randomIndex];
 }
