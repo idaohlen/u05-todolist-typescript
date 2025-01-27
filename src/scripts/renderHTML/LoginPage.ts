@@ -1,4 +1,4 @@
-const LoginPage = `
+export default `
     <header class="app-header">
       <h1>Todo List</h1>
       <iconify-icon icon="fa6-solid:pen-nib" class="app-header__icon"></iconify-icon>
@@ -19,5 +19,3 @@ const LoginPage = `
       </div>
     </div>
   `
-
-export default LoginPage;

@@ -33,6 +33,7 @@ import { getCategoryColor, getCategoryIcon } from "./scripts/utils.ts";
 
 // Models
 import Todo from "./models/Todo.ts";
+import { User } from "@supabase/supabase-js";
 
 // HTML elements
 const appContainer = document.querySelector("#app") as HTMLElement;
@@ -442,23 +443,57 @@ async function handleEditTodo(todoElement: HTMLElement) {
   };
 
   // Delete current todo in edit modal
-  deleteTodoBtn.onclick = async () => {
-    try {
-      // Delete todo from the database
-      await deleteTodo(todoId);
-      // Re-fetch todos and re-render them
-      allTodos = await getTodos(user.id);
-      renderTodos();
-      // Close edit todo modal
-      closeModal();
-    } catch (error) {
-      console.error("Error deleting todo:", error);
-    }
+  deleteTodoBtn.onclick = () => {
+    showConfirmationDialog(
+      "Delete Todo",
+      "Are you sure you want to delete the todo?",
+      () => { handleDeleteTodo(todoId, user) }
+    );
   };
 
   // Cancel todo edit/close modal
   cancelBtn.onclick = () => {
     closeModal();
+  };
+}
+
+async function handleDeleteTodo(todoId: string, user: User) {
+  try {
+    // Delete todo from the database
+    await deleteTodo(todoId);
+    // Re-fetch todos and re-render them
+    allTodos = await getTodos(user.id);
+    renderTodos();
+  } catch (error) {
+    console.error("Error deleting todo:", error);
+  }
+}
+
+
+/* ---------------------------------------------- */
+// CONFIMRATION DIALOG
+/* ---------------------------------------------- */
+
+function showConfirmationDialog(title: string, message: string, onConfirm: () => void) {
+  const confirmationDialog = document.getElementById("confirmationDialog") as HTMLDialogElement;
+  const confirmYesBtn = document.getElementById("confirmYesBtn") as HTMLButtonElement;
+  const confirmNoBtn = document.getElementById("confirmNoBtn") as HTMLButtonElement;
+
+  const headingElement = confirmationDialog.querySelector(".dialog__heading");
+  if (headingElement) headingElement.textContent = title;
+
+  const messageElement = confirmationDialog.querySelector(".dialog__message");
+  if (messageElement) messageElement.textContent = message;
+
+  confirmationDialog.showModal();
+
+  confirmYesBtn.onclick = () => {
+    onConfirm();
+    confirmationDialog.close();
+  };
+
+  confirmNoBtn.onclick = () => {
+    confirmationDialog.close();
   };
 }
 
@@ -611,10 +646,14 @@ function setupSettingsMenu() {
     onMount() {
       const deleteAllTodosBtn = document.getElementById("deleteAllTodosBtn") as HTMLElement;
       const logoutBtn = document.getElementById("logoutBtn") as HTMLElement;
-
-      console.log(logoutBtn);
     
-      deleteAllTodosBtn?.addEventListener("click", handleDeleteAllTodos);
+      deleteAllTodosBtn?.addEventListener("click", () => {
+        showConfirmationDialog(
+          "Delete All Todos",
+          "Are you sure you want to delete all todos?",
+          () => { handleDeleteAllTodos() }
+        );
+      });
       logoutBtn?.addEventListener("click", handleUserLogout);
     }
   });
@@ -623,11 +662,9 @@ function setupSettingsMenu() {
 async function handleDeleteAllTodos() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
-
   try {
     await deleteAllTodos(user.id);
     renderTodos([]);
-
   } catch (error) {
     console.error("Error deleting all todos:", error);
   }

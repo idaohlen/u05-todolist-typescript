@@ -1,4 +1,4 @@
-const ListPage = `
+export default `
   <header class="app-header">
     <h1>Todo List</h1>
     <iconify-icon icon="fa6-solid:pen-nib" class="app-header__icon"></iconify-icon>
@@ -31,30 +31,35 @@ const ListPage = `
 
   <div class="category-filters"></div>
 
-  <dialog id="editTodoDialog" class="todo-dialog">
-  <button id="cancelBtn" value="cancel" class="todo-dialog__cancel-btn">
+  <dialog id="editTodoDialog" class="dialog todo-dialog">
+  <button id="cancelBtn" value="cancel" class="dialog__cancel-btn">
     <iconify-icon icon="icon-park-outline:close-one" class="icon"></iconify-icon>
   </button>
     <form method="dialog">
-      <h2 class="todo-dialog__heading">Edit todo</h2>
-      <div class="todo-dialog__form-inputs">
-        <button id="editTodoCategory" class="btn btn--round todo-dialog__edit-category-btn">
+      <h2 class="dialog__heading">Edit todo</h2>
+      <div class="dialog__form-inputs">
+        <button id="editTodoCategory" class="btn btn--round dialog__edit-category-btn">
           <iconify-icon id="editCategoryIcon" icon="solar:menu-dots-bold"></iconify-icon>
         </button>
-        <input type="text" id="editTodoInput" class="todo-dialog__todo-input">
+        <input type="text" id="editTodoInput" class="dialog__todo-input">
         <input type="text" id="editDueByInput" class="hidden-input">
         <button id="editDueByInputBtn" class="new-todo__dueby-btn edit-todo__dueby-btn">
           <iconify-icon icon="solar:calendar-bold"></iconify-icon>
         </button>
       </div>
-      <div class="todo-dialog__actions">
+      <div class="dialog__actions">
         <button id="deleteTodoBtn" value="delete" class="btn btn--gray">Delete</button>
         <button id="saveTodoBtn" value="save" class="btn">Save</button>
       </div>
     </form>
   </dialog>
 
-  <div id="categoryPopup" class="category-popup"></div>
+  <dialog id="confirmationDialog" class="dialog confirmation-dialog">
+    <h2 class="dialog__heading"></h2>
+    <p class="dialog__message"></p>
+    <div class="dialog__actions">
+    <button id="confirmNoBtn" class="btn btn--gray">No</button>
+    <button id="confirmYesBtn" class="btn">Yes</button>
+    </div>
+  </dialog>
 `;
-
-export default ListPage;
