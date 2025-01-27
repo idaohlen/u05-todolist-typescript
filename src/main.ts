@@ -39,6 +39,7 @@ const appContainer = document.querySelector("#app") as HTMLElement;
 
 // Variables
 let allTodos: Todo[] = [];
+let updatedCategory: string | null = null;
 
 // Todo filters
 let categoryFilters: string[] = [];
@@ -354,9 +355,19 @@ function setupEditTodoModal() {
   const editDueByInput = document.getElementById("editDueByInput") as HTMLInputElement;
   const editDueByInputBtn = document.getElementById("editDueByInputBtn") as HTMLInputElement;
   const editTodoDialog = document.getElementById("editTodoDialog") as HTMLElement;
+  const editCategoryBtn = document.getElementById("editTodoCategory") as HTMLButtonElement;
 
   // Apply flatpickr to due by input element in editing modal
   mountFlatpickr(editDueByInput, editDueByInputBtn, editTodoDialog);
+
+  // Setup popup for picking todo category
+  setupCategoryPopup(editCategoryBtn, (category) => {
+    updatedCategory = category;
+  });
+
+  // Button tooltips
+  mountTooltip(editCategoryBtn, "Edit category", editTodoDialog);
+  mountTooltip(editDueByInputBtn, "Edit due date", editTodoDialog);
 }
 
 async function handleEditTodo(todoElement: HTMLElement) {
@@ -364,7 +375,6 @@ async function handleEditTodo(todoElement: HTMLElement) {
   const editTodoInput = document.getElementById("editTodoInput") as HTMLInputElement;
   const editDueByInput = document.getElementById("editDueByInput") as HTMLInputElement;
   const editDueByInputBtn = document.getElementById("editDueByInputBtn") as HTMLInputElement;
-  const editCategoryBtn = document.getElementById("editTodoCategory") as HTMLButtonElement;
   const saveTodoBtn = document.getElementById("saveTodoBtn") as HTMLButtonElement;
   const deleteTodoBtn = document.getElementById("deleteTodoBtn") as HTMLButtonElement;
   const cancelBtn = document.getElementById("cancelBtn") as HTMLButtonElement;
@@ -389,7 +399,7 @@ async function handleEditTodo(todoElement: HTMLElement) {
   if (todo.due_by) editDueByInputBtn.classList.add("has-value");
   else editDueByInputBtn.classList.remove("has-value");
 
-  let updatedCategory = todo.category;
+  updatedCategory = todo.category;
 
   // Display todo's category
   let icon = document.getElementById("editCategoryIcon");
@@ -399,21 +409,19 @@ async function handleEditTodo(todoElement: HTMLElement) {
   // Open the edit todo modal
   editTodoDialog.showModal();
 
-  // Close dialog when clicking on the backdrop
-  editTodoDialog.addEventListener("click", (e) => {
+  // Close modal when clicking on the backdrop
+  const closeModal = () => {
+    editTodoDialog.close();
+    updatedCategory = null;
+  };
+
+  function handleBackdropClick(e: MouseEvent) {
     if (e.target === editTodoDialog) {
-      editTodoDialog.close();
+      closeModal();
     }
-  });
+  };
 
-  // Setup popup for picking todo category
-  setupCategoryPopup(editCategoryBtn, (category) => {
-    updatedCategory = category;
-  });
-
-  // Button tooltips
-  mountTooltip(editCategoryBtn, "Edit category", editTodoDialog);
-  mountTooltip(editDueByInputBtn, "Edit due date", editTodoDialog);
+  editTodoDialog.addEventListener("click", handleBackdropClick);
 
   // Save todo edits
   saveTodoBtn.onclick = async () => {
@@ -427,7 +435,7 @@ async function handleEditTodo(todoElement: HTMLElement) {
       allTodos = await getTodos(user.id);
       renderTodos();
       // Close edit todo modal
-      editTodoDialog.close();
+      closeModal();
     } catch (error) {
       console.error("Error updating todo:", error);
     }
@@ -442,7 +450,7 @@ async function handleEditTodo(todoElement: HTMLElement) {
       allTodos = await getTodos(user.id);
       renderTodos();
       // Close edit todo modal
-      editTodoDialog.close();
+      closeModal();
     } catch (error) {
       console.error("Error deleting todo:", error);
     }
@@ -450,7 +458,7 @@ async function handleEditTodo(todoElement: HTMLElement) {
 
   // Cancel todo edit/close modal
   cancelBtn.onclick = () => {
-    editTodoDialog.close();
+    closeModal();
   };
 }
 
