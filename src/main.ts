@@ -39,7 +39,6 @@ const appContainer = document.querySelector("#app") as HTMLElement;
 
 // Variables
 let allTodos: Todo[] = [];
-let activeEditRequestController: AbortController | null = null;
 
 // Todo filters
 let categoryFilters: string[] = [];
@@ -124,6 +123,7 @@ async function renderListPage() {
 
   appContainer.innerHTML = ListPage;
 
+  // Setup script logic for DOM-elements
   setupSettingsMenu();
   setupNewTodoForm();
   setupEditTodoModal();
@@ -159,6 +159,7 @@ async function renderTodos(todos: Todo[] = allTodos) {
 
     if (!dueDate) return false;
 
+    // Filter todos by due date
     if (dueDateFilter === "today") {
       return dueDate.toDateString() === now.toDateString();
     } else if (dueDateFilter === "this_week") {
@@ -169,7 +170,7 @@ async function renderTodos(todos: Todo[] = allTodos) {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
       return dueDate >= startOfMonth && dueDate <= endOfMonth;
-    } else if (dueDateFilter === "overdue") {
+    } else if (dueDateFilter === "overdue" && !todo.completed) {
       return dueDate < now;
     }
     return false;
@@ -196,13 +197,14 @@ async function renderTodos(todos: Todo[] = allTodos) {
       const checkbox = target as HTMLInputElement;
       handleupdateTodoCompletedStatus(checkbox);
     }
-
+    // Handle open todo edit modal
     if (target.closest(".todo") && !target.closest(".todo__checkbox")) {
       handleEditTodo(target.closest(".todo") as HTMLElement);
     }
   });
 }
 
+// Render category filter buttons
 function renderCategories() {
   const categoriesContainer = document.querySelector(".category-filters") as HTMLElement;
 
@@ -224,16 +226,11 @@ function renderCategories() {
   const buttons = Array.from(document.querySelectorAll(".choose-category-btn")) as HTMLElement[];
 
   buttons.forEach(btn => {
-    tippy(btn, {
-      content: btn.dataset.tooltip,
-      placement: "top",
-      arrow: true,
-      theme: "light-border"
-    });
+    mountTooltip(btn, btn.dataset.tooltip);
 
     btn.addEventListener("click", () => {
       const category = btn.dataset.categoryId || "";
-
+      // Add/remove active-filter class to currently applied category filters
       if (categoryFilters.includes(category)) {
         categoryFilters = categoryFilters.filter(cat => cat !== category);
         btn.classList.remove("active-filter");
@@ -260,6 +257,7 @@ async function handleupdateTodoCompletedStatus(checkbox: HTMLInputElement) {
   try {
     await updateTodoCompletedStatus(todoId, completed);
     
+    // Add/remove completed class for todo
     if (completed) {
       todoElement.classList.add("completed");
     } else {
@@ -276,6 +274,7 @@ async function handleupdateTodoCompletedStatus(checkbox: HTMLInputElement) {
 // TODO FILTERS
 /* ---------------------------------------------- */
 
+// Set up logic for filtering todos by due date when clicking on a filter button
 function setupDueByFilters() {
   const dueByFilters = document.querySelectorAll(".dueby-filters .filter-btn");
   dueByFilters.forEach(button => {
@@ -289,10 +288,12 @@ function setupDueByFilters() {
   });
 }
 
+// Apply due by filter and re-render todos
 function setDueDateFilter(filter: "today" | "this_week" | "this_month" | "overdue" | "all") {
   dueDateFilter = filter;
   renderTodos();
 }
+
 
 /* ---------------------------------------------- */
 // NEW TODO FORM
@@ -310,15 +311,14 @@ function setupNewTodoForm() {
 
   setupCategoryPopup(chooseCategoryBtn, (category) => {
     newCategory = category;
-    console.log("Selected category for new todo:", newCategory);
   });
 
   // Apply flatpickr to due by input element
   mountFlatpickr(dueByInput, dueByBtn);
 
-  tippy(chooseCategoryBtn, { content: "Choose category", placement: "top", arrow: true, theme: "light-border" });
-  tippy(dueByBtn, { content: "Set a due date", placement: "top", arrow: true, theme: "light-border" });
-  tippy(addTodoBtn, { content: "Add new todo", placement: "top", arrow: true, theme: "light-border" });
+  mountTooltip(chooseCategoryBtn, "Choose category");
+  mountTooltip(dueByBtn, "Set a due date");
+  mountTooltip(addTodoBtn, "Add new todo");
 
   // New todo form submission
   todoForm.addEventListener("submit", async (e) => {
@@ -360,15 +360,6 @@ function setupEditTodoModal() {
 }
 
 async function handleEditTodo(todoElement: HTMLElement) {
-  // Abort the previous request if it exists
-  if (activeEditRequestController) {
-    activeEditRequestController.abort();
-  }
-
-  // Create a new AbortController for the current request
-  activeEditRequestController = new AbortController();
-  // const { signal } = activeEditRequestController;
-
   const editTodoDialog = document.getElementById("editTodoDialog") as HTMLDialogElement;
   const editTodoInput = document.getElementById("editTodoInput") as HTMLInputElement;
   const editDueByInput = document.getElementById("editDueByInput") as HTMLInputElement;
@@ -378,16 +369,19 @@ async function handleEditTodo(todoElement: HTMLElement) {
   const deleteTodoBtn = document.getElementById("deleteTodoBtn") as HTMLButtonElement;
   const cancelBtn = document.getElementById("cancelBtn") as HTMLButtonElement;
 
+  // check that todo element has a todo-id correctly assigned
   const todoId = todoElement.dataset.todoId;
   if (!todoId) return;
 
+  // Check that user is logged in
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  const todos = await getTodos(user.id);
-  const todo = todos.find(t => t.id === todoId);
+  // Find todo in stored todos array
+  const todo = allTodos.find(t => t.id === todoId);
   if (!todo) return;
 
+  // Insert todo data into input elements
   editTodoInput.value = todo.todo;
   editDueByInput.value = todo.due_by ? new Date(todo.due_by).toISOString().slice(0, 16) : "";
 
@@ -397,36 +391,29 @@ async function handleEditTodo(todoElement: HTMLElement) {
 
   let updatedCategory = todo.category;
 
+  // Display todo's category
+  let icon = document.getElementById("editCategoryIcon");
+  const categoryIcon = getCategoryIcon(todo.category);
+  icon?.setAttribute("icon", categoryIcon);
+
+  // Open the edit todo modal
   editTodoDialog.showModal();
 
   // Close dialog when clicking on the backdrop
   editTodoDialog.addEventListener("click", (e) => {
     if (e.target === editTodoDialog) {
       editTodoDialog.close();
-      activeEditRequestController = null;
     }
   });
 
+  // Setup popup for picking todo category
   setupCategoryPopup(editCategoryBtn, (category) => {
     updatedCategory = category;
-    console.log("Selected category for edit todo:", updatedCategory);
   });
 
-  tippy(editCategoryBtn, {
-    content: "Edit category",
-    placement: "top",
-    arrow: true,
-    theme: "light-border",
-    appendTo: editTodoDialog
-  });
-
-  tippy(editDueByInputBtn, {
-    content: "Edit due date",
-    placement: "top",
-    arrow: true,
-    theme: "light-border",
-    appendTo: editTodoDialog
-  });
+  // Button tooltips
+  mountTooltip(editCategoryBtn, "Edit category", editTodoDialog);
+  mountTooltip(editDueByInputBtn, "Edit due date", editTodoDialog);
 
   // Save todo edits
   saveTodoBtn.onclick = async () => {
@@ -434,35 +421,36 @@ async function handleEditTodo(todoElement: HTMLElement) {
     const updatedDueBy = editDueByInput.value ? new Date(editDueByInput.value).toISOString() : null;
 
     try {
+      // Update todo in the database
       await updateTodo(todoId, updatedTodo, updatedCategory, updatedDueBy);
+      // Re-fetch todos and re-render them
       allTodos = await getTodos(user.id);
       renderTodos();
+      // Close edit todo modal
       editTodoDialog.close();
     } catch (error) {
       console.error("Error updating todo:", error);
-    } finally {
-      activeEditRequestController = null;
     }
   };
 
   // Delete current todo in edit modal
   deleteTodoBtn.onclick = async () => {
     try {
+      // Delete todo from the database
       await deleteTodo(todoId);
+      // Re-fetch todos and re-render them
       allTodos = await getTodos(user.id);
       renderTodos();
+      // Close edit todo modal
       editTodoDialog.close();
     } catch (error) {
       console.error("Error deleting todo:", error);
-    } finally {
-      activeEditRequestController = null;
     }
   };
 
   // Cancel todo edit/close modal
   cancelBtn.onclick = () => {
     editTodoDialog.close();
-    activeEditRequestController = null;
   };
 }
 
@@ -491,7 +479,9 @@ function setupCategoryPopup(button: HTMLElement, onSelectCategory: (category: st
     const category = target.dataset.categoryName;
     if (target && category) {
       onSelectCategory(category);
-      const icon = document.getElementById("newCategoryIcon");
+      
+      let icon = document.getElementById("newCategoryIcon");
+      if (button.id === "editTodoCategory") icon = document.getElementById("editCategoryIcon");
       const categoryIcon = getCategoryIcon(category);
       icon?.setAttribute("icon", categoryIcon);
 
@@ -565,6 +555,21 @@ function mountFlatpickr(
   });
 
   return fp;
+}
+
+
+/* ---------------------------------------------- */
+// TIPPY
+/* ---------------------------------------------- */
+
+function mountTooltip(element: HTMLElement, label: string | undefined, appendTo: HTMLElement = document.body) {
+  tippy(element, {
+    content: label,
+    placement: "top",
+    arrow: true,
+    theme: "light-border",
+    appendTo: appendTo
+  });
 }
 
 

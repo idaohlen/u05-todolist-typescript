@@ -39,7 +39,7 @@ const ListPage = `
       <h2 class="todo-dialog__heading">Edit todo</h2>
       <div class="todo-dialog__form-inputs">
         <button id="editTodoCategory" class="btn btn--round todo-dialog__edit-category-btn">
-          <iconify-icon icon="solar:menu-dots-bold"></iconify-icon>
+          <iconify-icon id="editCategoryIcon" icon="solar:menu-dots-bold"></iconify-icon>
         </button>
         <input type="text" id="editTodoInput" class="todo-dialog__todo-input">
         <input type="text" id="editDueByInput" class="hidden-input">
