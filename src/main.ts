@@ -512,6 +512,10 @@ function setupCategoryPopup(button: HTMLElement, onSelectCategory: (category: st
         ${category.name}
       </button>
     `).join("")}
+    <button class="choose-category-btn menu-popup__item" data-category-name="none">
+      <iconify-icon icon="solar:menu-dots-bold" class="menu-popup__item-icon"></iconify-icon>
+      No category
+    </button>
   `;
 
   const buttons = popupContent.querySelectorAll(".choose-category-btn");

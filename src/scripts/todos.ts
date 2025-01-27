@@ -16,6 +16,7 @@ export async function addTodo(
   category: string | null = null,
   dueBy: string | null = null
 ){
+  if (category === "none") category = null;
   const { error } = await supabase
     .from("todos")
     .insert([{
@@ -44,6 +45,7 @@ export async function updateTodo(
   updatedCategory: string | null,
   updatedDueBy: string | null
 ){
+  if (updatedCategory === "none") updatedCategory = null;
   const { error } = await supabase
     .from("todos")
     .update({
