@@ -1,6 +1,7 @@
 # u05-todolist-typescript
 
-[Se todolistan på Netlify](https://idaohlen-u05-todolist-typescript.netlify.app)
+[Se todolistan på Netlify](https://idaohlen-todolist-typescript-local.netlify.app)
+[Se todolistan på Netlify (Supabase)](https://idaohlen-u05-todolist-typescript.netlify.app)
 
 Jag har byggt en todolist i TypeScript som använder [Supabase](https://supabase.com) för användarautentisering och för att spara data i en databas lagrad hos Supabase. På första sidan kan man välja att skapa ett konto eller logga in, och sedan förs man vidare till själva listan som tillhör den inloggade användaren. Man kan skapa, ta bort och ändra sina todos, och i inställningsmenyn som finns att hitta i övre högra hörnet kan man välja att ta bort alla todos eller logga ut. Varje todo har en förklarande text, men man kan också välja att ge den en kategori eller ange ett datum för när todon ska vara klar. I sin lista kan man sedan välja att filtrera sina todos på datum och kategorier, och båda filterna fungerar tillsammans.
 
