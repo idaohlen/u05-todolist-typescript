@@ -6,10 +6,10 @@ export default function TodoElement({ id, todo, category, completed, due_by }: T
   const formattedDueBy = due_by ? formatDate(due_by) : "";
 
   // Find icon for the category
-  const categoryIcon = getCategoryIcon(category);
+  const categoryIcon = getCategoryIcon(category || "none");
 
   // Find color for the category
-  const categoryColor = getCategoryColor(category);
+  const categoryColor = getCategoryColor(category || "none");
 
   // Check if the todo is overdue
   const isOverdue = due_by ? new Date(due_by) < new Date() : false;

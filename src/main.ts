@@ -326,7 +326,7 @@ async function handleEditTodo(todoElement: HTMLElement) {
 
   // Display todo's category
   let icon = document.getElementById("editCategoryIcon");
-  const categoryIcon = getCategoryIcon(todo.category);
+  const categoryIcon = getCategoryIcon(todo.category || "none");
   icon?.setAttribute("icon", categoryIcon);
 
   // Open the edit todo modal
