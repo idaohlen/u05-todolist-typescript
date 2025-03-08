@@ -73,7 +73,7 @@ async function renderTodos(todos: Todo[] = allTodos) {
   // Apply category filters
   let filteredTodos = todos.filter(todo => {
     if (categoryFilters.length === 0) return true;
-    if (categoryFilters.includes(todo.category)) return true;
+    if (todo.category && categoryFilters.includes(todo.category)) return true;
     if (categoryFilters.includes("none") && !todo.category) return true;
     return false;
   });
