@@ -1,6 +1,8 @@
 import { allCategories } from "./categories.ts";
 import todoSuggestions from "../data/random-todos.json";
 
+import { v4 as uuidv4 } from 'uuid';
+
 export function formatDate(date: string) {
   return new Date(date).toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -26,4 +28,8 @@ export function getCategoryIcon(category: string) {
 export function getRandomTodoSuggestion(): string {
   const randomIndex = Math.floor(Math.random() * todoSuggestions.length);
   return todoSuggestions[randomIndex];
+}
+
+export function generateUUID() {
+  return uuidv4();
 }

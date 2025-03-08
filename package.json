@@ -16,9 +16,9 @@
   "dependencies": {
     "@fontsource-variable/playwrite-us-trad": "^5.1.1",
     "@fontsource-variable/sofia-sans": "^5.1.1",
-    "@supabase/supabase-js": "^2.47.14",
     "flatpickr": "^4.6.13",
     "iconify-icon": "^2.3.0",
-    "tippy.js": "^6.3.7"
+    "tippy.js": "^6.3.7",
+    "uuid": "^11.1.0"
   }
 }

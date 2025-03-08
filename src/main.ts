@@ -5,7 +5,7 @@ import "./styles/style.scss";
 
 // Libraries
 import "iconify-icon";
-import { supabase } from "./scripts/supabaseClient.ts";
+
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import tippy from "tippy.js";
@@ -13,12 +13,12 @@ import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light-border.css";
 
 // Pages / Components
-import LoginPage from "./scripts/renderHTML/LoginPage.ts";
 import ListPage from "./scripts/renderHTML/ListPage.ts";
 import TodoElement from "./scripts/renderHTML/TodoElement.ts";
 
 // Scripts
 import {
+  allTodos,
   getTodos,
   addTodo,
   deleteTodo,
@@ -27,19 +27,16 @@ import {
   deleteAllTodos
 } from "./scripts/todos.ts";
 
-import { registerUser, loginUser, logoutUser } from "./scripts/userAuth.ts";
 import { allCategories } from "./scripts/categories.ts";
 import { getCategoryColor, getCategoryIcon, getRandomTodoSuggestion } from "./scripts/utils.ts";
 
 // Models
 import Todo from "./models/Todo.ts";
-import { User } from "@supabase/supabase-js";
 
 // HTML elements
 const appContainer = document.querySelector("#app") as HTMLElement;
 
 // Variables
-let allTodos: Todo[] = [];
 let updatedCategory: string | null = null;
 
 // Todo filters
@@ -48,79 +45,11 @@ let dueDateFilter: "today" | "this_week" | "this_month" | "overdue" | "all" = "a
 
 
 /* ---------------------------------------------- */
-// LOGIN PAGE
-/* ---------------------------------------------- */
-
-function renderLoginPage() {
-  appContainer.classList.remove("todolist-page");
-  appContainer.classList.add("login-page");
-
-  appContainer.innerHTML = LoginPage;
-
-  const registerUserBtn = document.getElementById("registerUserBtn") as HTMLElement;
-  const loginBtn = document.getElementById("loginBtn") as HTMLElement;
-
-  registerUserBtn?.addEventListener("click", handleRegisterUser); // register new user
-  loginBtn?.addEventListener("click", handleUserLogin);           // log in existing user
-}
-
-// Register a new user
-async function handleRegisterUser() {
-  const email = (document.getElementById("emailInput") as HTMLInputElement).value;
-  const password = (document.getElementById("passwordInput") as HTMLInputElement).value;
-  const errorMessage = document.getElementById("errorMessage") as HTMLElement;
-  
-  errorMessage.textContent = "";
-
-  try {
-    await registerUser(email, password);
-    renderListPage();
-  } catch (error) {
-    if (error instanceof Error && error.message.includes("User already registered")) {
-      errorMessage.textContent = "User with that email already exists. Please try logging in or use another email address.";
-    } else {
-      errorMessage.textContent = "An error occurred. Please try again.";
-    }
-  }
-}
-
-// Log in an existing user
-async function handleUserLogin() {
-  const email = (document.getElementById("emailInput") as HTMLInputElement).value;
-  const password = (document.getElementById("passwordInput") as HTMLInputElement).value;
-  const errorMessage = document.getElementById("errorMessage") as HTMLElement;
-
-  errorMessage.textContent = "";
-
-  try {
-    await loginUser(email, password);
-    renderListPage();
-  } catch (error) {
-    if (error instanceof Error) {
-      errorMessage.textContent = error.message;
-    }
-  }
-}
-
-// Log out user
-async function handleUserLogout() {
-  console.log("logging out...");
-  try {
-    await logoutUser();
-    renderLoginPage();
-  } catch (error) {
-    console.error("Error occured while trying to logout:", error);
-  }
-}
-
-
-/* ---------------------------------------------- */
 // TODOLIST PAGE
 /* ---------------------------------------------- */
 
 // Render page with user's todo-list
 async function renderListPage() {
-  appContainer.classList.remove("login-page");
   appContainer.classList.add("todolist-page");
 
   appContainer.innerHTML = ListPage;
@@ -132,12 +61,9 @@ async function renderListPage() {
   setupDueByFilters();
 
   // Fetch and render todos on page render
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    allTodos = await getTodos(user.id);
+    getTodos();
     renderTodos();
     renderCategories();
-  }
 }
 
 // Render todos in the todos-container
@@ -329,24 +255,20 @@ function setupNewTodoForm() {
   todoForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const dueBy = dueByInput.value ? new Date(dueByInput.value).toISOString() : null;
-    
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      try {
-        if (!todoInput.value.trim()) throw new Error("Todo cannot be empty.");
 
-        await addTodo(todoInput.value, user.id, newCategory, dueBy);
-        
-        todoInput.value = "";
-        todoInput.placeholder = getRandomTodoSuggestion();
-        dueByInput.value = "";
-        dueByBtn.classList.remove("has-value");
-        
-        allTodos = await getTodos(user.id);
-        renderTodos();
-      } catch (e) {
-        console.log(e);
-      }
+    try {
+      if (!todoInput.value.trim()) throw new Error("Todo cannot be empty.");
+
+      await addTodo(todoInput.value, newCategory, dueBy);
+      
+      todoInput.value = "";
+      todoInput.placeholder = getRandomTodoSuggestion();
+      dueByInput.value = "";
+      dueByBtn.classList.remove("has-value");
+      
+      renderTodos();
+    } catch (e) {
+      console.log(e);
     }
   });
 }
@@ -387,10 +309,6 @@ async function handleEditTodo(todoElement: HTMLElement) {
   // check that todo element has a todo-id correctly assigned
   const todoId = todoElement.dataset.todoId;
   if (!todoId) return;
-
-  // Check that user is logged in
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
 
   // Find todo in stored todos array
   const todo = allTodos.find(t => t.id === todoId);
@@ -436,8 +354,7 @@ async function handleEditTodo(todoElement: HTMLElement) {
     try {
       // Update todo in the database
       await updateTodo(todoId, updatedTodo, updatedCategory, updatedDueBy);
-      // Re-fetch todos and re-render them
-      allTodos = await getTodos(user.id);
+      // Re-render todos
       renderTodos();
       // Close edit todo modal
       closeModal();
@@ -451,7 +368,7 @@ async function handleEditTodo(todoElement: HTMLElement) {
     showConfirmationDialog(
       "Delete Todo",
       "Are you sure you want to delete the todo?",
-      () => { handleDeleteTodo(todoId, user) }
+      () => { handleDeleteTodo(todoId) }
     );
   };
 
@@ -461,12 +378,11 @@ async function handleEditTodo(todoElement: HTMLElement) {
   };
 }
 
-async function handleDeleteTodo(todoId: string, user: User) {
+async function handleDeleteTodo(todoId: string) {
   try {
     // Delete todo from the database
     await deleteTodo(todoId);
-    // Re-fetch todos and re-render them
-    allTodos = await getTodos(user.id);
+    // Re-render todos
     renderTodos();
   } catch (error) {
     console.error("Error deleting todo:", error);
@@ -638,10 +554,6 @@ function setupSettingsMenu() {
         <iconify-icon icon="solar:trash-bin-trash-bold" class="menu-popup__item-icon"></iconify-icon>
         Delete all todos
       </button>
-      <button id="logoutBtn" class="menu-popup__item">
-        <iconify-icon icon="solar:logout-2-bold" class="menu-popup__item-icon"></iconify-icon>
-        Logout
-      </button>
   `;
 
   tippy(settingsBtn, {
@@ -653,8 +565,7 @@ function setupSettingsMenu() {
     theme: "light-border",
     onMount() {
       const deleteAllTodosBtn = document.getElementById("deleteAllTodosBtn") as HTMLElement;
-      const logoutBtn = document.getElementById("logoutBtn") as HTMLElement;
-    
+
       deleteAllTodosBtn?.addEventListener("click", () => {
         showConfirmationDialog(
           "Delete All Todos",
@@ -662,16 +573,14 @@ function setupSettingsMenu() {
           () => { handleDeleteAllTodos() }
         );
       });
-      logoutBtn?.addEventListener("click", handleUserLogout);
     }
   });
 }
 
 async function handleDeleteAllTodos() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+
   try {
-    await deleteAllTodos(user.id);
+    await deleteAllTodos();
     renderTodos([]);
   } catch (error) {
     console.error("Error deleting all todos:", error);
@@ -683,14 +592,4 @@ async function handleDeleteAllTodos() {
 // INIT CODE
 /* ---------------------------------------------- */
 
-// Check user status on page load and render relevant page content
-// If true, render the todolist for the user.
-// If false, render the login page.
-
-async function checkUserStatus() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) renderListPage();
-  else renderLoginPage();
-}
-
-checkUserStatus();
+renderListPage();

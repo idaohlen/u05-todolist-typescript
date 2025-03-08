@@ -1,42 +1,48 @@
-import { supabase } from "./supabaseClient.ts";
+import Todo from "../models/Todo";
+import { generateUUID } from "./utils";
 
-export async function getTodos(userId: string) {
-  const { data, error } = await supabase
-    .from("todos")
-    .select("*")
-    .eq("user_id", userId);
+export let allTodos: Todo[] = [];
 
-  if (error) throw error;
-  return data;
+export async function getTodos() {
+  const todos = localStorage.getItem("todos");
+  if (todos) allTodos = JSON.parse(todos);
+}
+
+function saveTodos() {
+  localStorage.setItem("todos", JSON.stringify(allTodos));
 }
 
 export async function addTodo(
   todo: string,
-  userId: string,
   category: string | null = null,
   dueBy: string | null = null
 ){
   if (category === "none") category = null;
-  const { error } = await supabase
-    .from("todos")
-    .insert([{
-      todo,
-      user_id: userId,
-      category: category,
-      due_by: dueBy,
-      completed: false
-    }]);
 
-  if (error) throw error;
+  let newId = '';
+
+  do {
+    newId = generateUUID();
+  }
+  while (allTodos.find(todo => todo.id === newId));
+
+  const createdDate = Date.now().toString();
+
+  allTodos.push({
+    id: newId,
+    todo,
+    category: category,
+    due_by: dueBy,
+    completed: false,
+    created_at: createdDate
+  });
+  saveTodos();
 }
 
 export async function updateTodoCompletedStatus(todoId: string, completed: boolean) {
-  const { error } = await supabase
-    .from("todos")
-    .update({ completed })
-    .eq("id", todoId);
-
-  if (error) throw error;
+  const index = allTodos.findIndex(todo => todo.id === todoId);
+  allTodos[index] = { ...allTodos[index], completed };
+  saveTodos();
 }
 
 export async function updateTodo(
@@ -46,32 +52,23 @@ export async function updateTodo(
   updatedDueBy: string | null
 ){
   if (updatedCategory === "none") updatedCategory = null;
-  const { error } = await supabase
-    .from("todos")
-    .update({
-      todo: updatedTodo,
-      category: updatedCategory,
-      due_by: updatedDueBy
-    })
-    .eq("id", todoId);
 
-  if (error) throw error;
+  const index = allTodos.findIndex(todo => todo.id === todoId);
+  allTodos[index] = {
+    ...allTodos[index],
+    todo: updatedTodo,
+    category: updatedCategory,
+    due_by: updatedDueBy
+  }
+  saveTodos();
 }
 
 export async function deleteTodo(todoId: string) {
-  const { error } = await supabase
-    .from("todos")
-    .delete()
-    .eq("id", todoId);
-
-  if (error) throw error;
+  allTodos = allTodos.filter(todo => todo.id !== todoId);
+  saveTodos();
 }
 
-export async function deleteAllTodos(userId: string) {
-  const { error } = await supabase
-    .from("todos")
-    .delete()
-    .eq("user_id", userId);
-
-  if (error) throw error;
+export async function deleteAllTodos() {
+  allTodos = [];
+  saveTodos();
 }
